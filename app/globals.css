@@ -5,6 +5,7 @@
   --color-brick: #a8412f;
   --color-moss: #5b7a5a;
   --color-amber: #b4863a;
+  --color-kraft: #c9a97b;
   --color-border: #cdc9bb;
   --background: var(--color-paper);
   --foreground: var(--color-ink);
@@ -26,7 +27,7 @@ body {
   flex-direction: column;
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -66,6 +67,12 @@ main {
   padding: 1.5rem 1.25rem 3rem;
 }
 
+h1,
+h2,
+p {
+  overflow-wrap: break-word;
+}
+
 h1 {
   font-size: 1.5rem;
   margin-bottom: 1rem;
@@ -76,14 +83,22 @@ h2 {
   margin-bottom: 0.5rem;
 }
 
-form > div {
+form > div,
+form > fieldset {
   margin-bottom: 1rem;
 }
 
-label {
+fieldset {
+  border: none;
+  padding: 0;
+}
+
+label,
+legend {
   display: block;
   font-weight: 600;
   margin-bottom: 0.25rem;
+  padding: 0;
 }
 
 input,
@@ -197,19 +212,8 @@ ul li + li {
 }
 
 .result-option:has(input:checked) {
-  border-color: currentColor;
-}
-
-.result-option--success {
-  color: var(--color-moss);
-}
-
-.result-option--partial {
-  color: var(--color-amber);
-}
-
-.result-option--failed {
-  color: var(--color-brick);
+  border-color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 
 .evidence-section {
@@ -219,28 +223,18 @@ ul li + li {
 }
 
 .evidence-item {
-  background: var(--color-kraft, #f1ead9);
+  background: var(--color-kraft);
+  padding: 1rem;
+  border-radius: 4px;
 }
 
 .evidence-timestamp {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.85rem;
 }
 
 .evidence-result {
   font-weight: 600;
-}
-
-.evidence-result--success {
-  color: var(--color-moss);
-}
-
-.evidence-result--partial {
-  color: var(--color-amber);
-}
-
-.evidence-result--failed {
-  color: var(--color-brick);
 }
 
 .evidence-images {

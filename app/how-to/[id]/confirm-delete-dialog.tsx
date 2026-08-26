@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
+import { useId, useRef, type ReactNode } from "react";
 
 export function ConfirmDeleteDialog({
   triggerLabel,
+  triggerAriaLabel,
   title,
   message,
   confirmLabel,
@@ -12,6 +13,7 @@ export function ConfirmDeleteDialog({
   formAction,
 }: {
   triggerLabel: string;
+  triggerAriaLabel?: string;
   title: string;
   message: string;
   confirmLabel: string;
@@ -20,15 +22,22 @@ export function ConfirmDeleteDialog({
   formAction: (formData: FormData) => void;
 }): ReactNode {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const messageId = useId();
 
   return (
     <>
-      <button type="button" className="danger" onClick={() => dialogRef.current?.showModal()}>
+      <button
+        type="button"
+        className="danger"
+        aria-label={triggerAriaLabel}
+        onClick={() => dialogRef.current?.showModal()}
+      >
         {triggerLabel}
       </button>
-      <dialog ref={dialogRef} className="confirm-dialog">
-        <h2>{title}</h2>
-        <p>{message}</p>
+      <dialog ref={dialogRef} className="confirm-dialog" aria-labelledby={titleId} aria-describedby={messageId}>
+        <h2 id={titleId}>{title}</h2>
+        <p id={messageId}>{message}</p>
         {error && <p role="alert">{error}</p>}
         <form action={formAction}>
           <div className="confirm-dialog-actions">

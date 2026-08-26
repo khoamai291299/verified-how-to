@@ -5,7 +5,7 @@ import { createHowTo, type CreateHowToState } from "./actions";
 
 const initialState: CreateHowToState = {};
 
-function StepListField({ disabled }: { disabled: boolean }) {
+function StepListField({ disabled, describedBy }: { disabled: boolean; describedBy?: string }) {
   const [stepKeys, setStepKeys] = useState<number[]>([0]);
   const [nextKey, setNextKey] = useState(1);
 
@@ -27,6 +27,7 @@ function StepListField({ disabled }: { disabled: boolean }) {
           <input
             name="steps"
             aria-label={`Bước ${index + 1}`}
+            aria-describedby={describedBy}
             placeholder={`Mô tả bước ${index + 1}`}
             disabled={disabled}
           />
@@ -57,8 +58,18 @@ export function CreateHowToForm() {
     <form action={formAction}>
       <div>
         <label htmlFor="title">Tiêu đề</label>
-        <input id="title" name="title" type="text" disabled={pending} />
-        {state.fieldErrors?.title && <p role="alert">{state.fieldErrors.title}</p>}
+        <input
+          id="title"
+          name="title"
+          type="text"
+          disabled={pending}
+          aria-describedby={state.fieldErrors?.title ? "title-error" : undefined}
+        />
+        {state.fieldErrors?.title && (
+          <p role="alert" id="title-error">
+            {state.fieldErrors.title}
+          </p>
+        )}
       </div>
 
       <div>
@@ -66,8 +77,12 @@ export function CreateHowToForm() {
         <textarea id="description" name="description" rows={3} disabled={pending} />
       </div>
 
-      <StepListField disabled={pending} />
-      {state.fieldErrors?.steps && <p role="alert">{state.fieldErrors.steps}</p>}
+      <StepListField disabled={pending} describedBy={state.fieldErrors?.steps ? "steps-error" : undefined} />
+      {state.fieldErrors?.steps && (
+        <p role="alert" id="steps-error">
+          {state.fieldErrors.steps}
+        </p>
+      )}
 
       <div>
         <label htmlFor="expectedOutcome">Kết quả mong đợi (tùy chọn)</label>

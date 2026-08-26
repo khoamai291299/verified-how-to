@@ -23,32 +23,61 @@ export function SubmitAttemptReportForm({ howToId }: { howToId: string }) {
 
       {state.success && <p role="status">Đã gửi báo cáo thành công.</p>}
 
-      <div role="group" aria-labelledby="result-group-label">
-        <label id="result-group-label">Kết quả</label>
+      <fieldset aria-describedby={state.fieldErrors?.result ? "result-error" : undefined}>
+        <legend>Kết quả</legend>
         <div className="result-options">
           {RESULT_VALUES.map((value) => (
-            <label key={value} className={`result-option result-option--${value}`}>
+            <label key={value} className="result-option">
               <input type="radio" name="result" value={value} disabled={pending} required />
               {RESULT_LABELS[value]}
             </label>
           ))}
         </div>
-        {state.fieldErrors?.result && <p role="alert">{state.fieldErrors.result}</p>}
-      </div>
+        {state.fieldErrors?.result && (
+          <p role="alert" id="result-error">
+            {state.fieldErrors.result}
+          </p>
+        )}
+      </fieldset>
 
       <div>
         <label htmlFor="image1">Ảnh 1 (tùy chọn)</label>
-        <input id="image1" name="image1" type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} />
+        <input
+          id="image1"
+          name="image1"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          disabled={pending}
+          aria-describedby={state.fieldErrors?.images ? "images-error" : undefined}
+        />
       </div>
       <div>
         <label htmlFor="image2">Ảnh 2 (tùy chọn)</label>
-        <input id="image2" name="image2" type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} />
+        <input
+          id="image2"
+          name="image2"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          disabled={pending}
+          aria-describedby={state.fieldErrors?.images ? "images-error" : undefined}
+        />
       </div>
       <div>
         <label htmlFor="image3">Ảnh 3 (tùy chọn)</label>
-        <input id="image3" name="image3" type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} />
+        <input
+          id="image3"
+          name="image3"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          disabled={pending}
+          aria-describedby={state.fieldErrors?.images ? "images-error" : undefined}
+        />
       </div>
-      {state.fieldErrors?.images && <p role="alert">{state.fieldErrors.images}</p>}
+      {state.fieldErrors?.images && (
+        <p role="alert" id="images-error">
+          {state.fieldErrors.images}
+        </p>
+      )}
 
       <div>
         <label htmlFor="note">Ghi chú (tùy chọn)</label>

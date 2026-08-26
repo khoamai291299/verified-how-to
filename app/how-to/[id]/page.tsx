@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { RESULT_LABELS, type AttemptReportResult } from "@/lib/supabase/types";
@@ -28,6 +29,16 @@ type AttemptReportView = {
   submitted_at: string;
   images: AttemptReportImageView[];
 };
+
+export async function generateMetadata({ params }: HowToDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = getServerSupabaseClient();
+  const { data: howTo } = await supabase.from("how_to").select("title").eq("id", id).maybeSingle();
+
+  return {
+    title: howTo ? `${howTo.title} – VHKP` : "VHKP",
+  };
+}
 
 export default async function HowToDetailPage({ params }: HowToDetailPageProps) {
   const { id } = await params;
@@ -132,33 +143,38 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           <p>Chưa có bằng chứng thực tế</p>
         ) : (
           <ul>
-            {reportViews.map((report) => (
-              <li key={report.id} className="evidence-item">
-                <p className="evidence-timestamp">
-                  {new Date(report.submitted_at).toLocaleString("vi-VN")}
-                </p>
-                <p className={`evidence-result evidence-result--${report.result}`}>
-                  {RESULT_LABELS[report.result]}
-                </p>
-                {report.note && <p>{report.note}</p>}
-                <DeleteAttemptReportButton reportId={report.id} howToId={id} />
-                {report.images.length > 0 && (
-                  <div className="evidence-images">
-                    {report.images.map(
-                      (image) =>
-                        image.signedUrl && (
-                          <img
-                            key={image.id}
-                            src={image.signedUrl}
-                            alt={`Ảnh bằng chứng ${image.position}`}
-                            className="evidence-image"
-                          />
-                        ),
-                    )}
-                  </div>
-                )}
-              </li>
-            ))}
+            {reportViews.map((report) => {
+              const formattedTimestamp = new Date(report.submitted_at).toLocaleString("vi-VN");
+              return (
+                <li key={report.id} className="evidence-item">
+                  <p className="evidence-timestamp">{formattedTimestamp}</p>
+                  <p className={`evidence-result evidence-result--${report.result}`}>
+                    {RESULT_LABELS[report.result]}
+                  </p>
+                  {report.note && <p>{report.note}</p>}
+                  <DeleteAttemptReportButton
+                    reportId={report.id}
+                    howToId={id}
+                    reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
+                  />
+                  {report.images.length > 0 && (
+                    <div className="evidence-images">
+                      {report.images.map(
+                        (image) =>
+                          image.signedUrl && (
+                            <img
+                              key={image.id}
+                              src={image.signedUrl}
+                              alt={`Ảnh bằng chứng ${image.position}`}
+                              className="evidence-image"
+                            />
+                          ),
+                      )}
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
