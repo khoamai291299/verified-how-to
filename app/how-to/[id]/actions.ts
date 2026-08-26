@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import {
   ALLOWED_IMAGE_MIME_TYPES,
@@ -143,4 +144,129 @@ export async function submitAttemptReport(
 
   revalidatePath(`/how-to/${howToId}`);
   return { success: true };
+}
+
+export type DeleteState = {
+  error?: string;
+};
+
+export async function deleteAttemptReport(
+  reportId: string,
+  howToId: string,
+  _prevState: DeleteState,
+  _formData: FormData,
+): Promise<DeleteState> {
+  const supabase = getServerSupabaseClient();
+
+  const { data: report, error: reportError } = await supabase
+    .from("attempt_report")
+    .select("id")
+    .eq("id", reportId)
+    .maybeSingle();
+
+  if (reportError) {
+    if (reportError.code === "22P02") {
+      return { error: "Báo cáo không tồn tại." };
+    }
+    console.error("Lỗi kiểm tra Báo cáo:", reportError);
+    return { error: "Không thể xóa báo cáo. Vui lòng thử lại." };
+  }
+  if (!report) {
+    return { error: "Báo cáo không tồn tại." };
+  }
+
+  const { data: images, error: imagesError } = await supabase
+    .from("attempt_report_image")
+    .select("storage_path")
+    .eq("attempt_report_id", reportId);
+
+  if (imagesError) {
+    console.error("Lỗi đọc ảnh của Báo cáo:", imagesError);
+    return { error: "Không thể xóa báo cáo. Vui lòng thử lại." };
+  }
+
+  const storagePaths = (images ?? []).map((image) => image.storage_path);
+
+  if (storagePaths.length > 0) {
+    const { error: removeError } = await supabase.storage.from(STORAGE_BUCKET).remove(storagePaths);
+    if (removeError) {
+      console.error("Lỗi xóa ảnh khỏi Storage:", removeError);
+      return { error: "Không thể xóa ảnh đính kèm. Vui lòng thử lại." };
+    }
+  }
+
+  const { error: deleteError } = await supabase.from("attempt_report").delete().eq("id", reportId);
+
+  if (deleteError) {
+    console.error("Lỗi xóa attempt_report:", deleteError);
+    return { error: "Đã xóa ảnh nhưng không thể xóa báo cáo. Vui lòng thử lại." };
+  }
+
+  revalidatePath(`/how-to/${howToId}`);
+  return {};
+}
+
+export async function deleteHowTo(howToId: string, _prevState: DeleteState, _formData: FormData): Promise<DeleteState> {
+  const supabase = getServerSupabaseClient();
+
+  const { data: howTo, error: howToError } = await supabase
+    .from("how_to")
+    .select("id")
+    .eq("id", howToId)
+    .maybeSingle();
+
+  if (howToError) {
+    if (howToError.code === "22P02") {
+      return { error: "Cách làm không tồn tại." };
+    }
+    console.error("Lỗi kiểm tra Cách làm:", howToError);
+    return { error: "Không thể xóa Cách làm. Vui lòng thử lại." };
+  }
+  if (!howTo) {
+    return { error: "Cách làm không tồn tại." };
+  }
+
+  const { data: reports, error: reportsError } = await supabase
+    .from("attempt_report")
+    .select("id")
+    .eq("how_to_id", howToId);
+
+  if (reportsError) {
+    console.error("Lỗi đọc Báo cáo của Cách làm:", reportsError);
+    return { error: "Không thể xóa Cách làm. Vui lòng thử lại." };
+  }
+
+  const reportIds = (reports ?? []).map((report) => report.id);
+
+  let storagePaths: string[] = [];
+  if (reportIds.length > 0) {
+    const { data: images, error: imagesError } = await supabase
+      .from("attempt_report_image")
+      .select("storage_path")
+      .in("attempt_report_id", reportIds);
+
+    if (imagesError) {
+      console.error("Lỗi đọc ảnh của Cách làm:", imagesError);
+      return { error: "Không thể xóa Cách làm. Vui lòng thử lại." };
+    }
+
+    storagePaths = (images ?? []).map((image) => image.storage_path);
+  }
+
+  if (storagePaths.length > 0) {
+    const { error: removeError } = await supabase.storage.from(STORAGE_BUCKET).remove(storagePaths);
+    if (removeError) {
+      console.error("Lỗi xóa ảnh khỏi Storage:", removeError);
+      return { error: "Không thể xóa ảnh đính kèm. Vui lòng thử lại." };
+    }
+  }
+
+  const { error: deleteError } = await supabase.from("how_to").delete().eq("id", howToId);
+
+  if (deleteError) {
+    console.error("Lỗi xóa how_to:", deleteError);
+    return { error: "Đã xóa ảnh nhưng không thể xóa Cách làm. Vui lòng thử lại." };
+  }
+
+  redirect("/");
 }

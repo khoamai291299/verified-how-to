@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { RESULT_LABELS, type AttemptReportResult } from "@/lib/supabase/types";
 import { SubmitAttemptReportForm } from "./submit-attempt-report-form";
+import { DeleteHowToButton } from "./delete-how-to-button";
+import { DeleteAttemptReportButton } from "./delete-attempt-report-button";
 
 // Nội dung phụ thuộc dữ liệu thật (How-To + Evidence) — không prerender tĩnh lúc build.
 export const dynamic = "force-dynamic";
@@ -108,6 +110,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
   return (
     <main>
       <h1>{howTo.title}</h1>
+      <DeleteHowToButton howToId={id} attemptReportCount={reportViews.length} />
       {howTo.description && <p>{howTo.description}</p>}
 
       <ol>
@@ -138,6 +141,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
                   {RESULT_LABELS[report.result]}
                 </p>
                 {report.note && <p>{report.note}</p>}
+                <DeleteAttemptReportButton reportId={report.id} howToId={id} />
                 {report.images.length > 0 && (
                   <div className="evidence-images">
                     {report.images.map(
