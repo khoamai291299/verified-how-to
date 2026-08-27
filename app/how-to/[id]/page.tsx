@@ -336,11 +336,29 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
             </ul>
           )}
 
-          {currentUser && (
-            <div className="save-action">
+          {/* Hành động chính luôn hiển thị, kể cả khi chưa đăng nhập — trước đó
+              cả "Lưu lại" lẫn "Tôi đã thử" chỉ tồn tại cho người đã đăng nhập,
+              nghĩa là phần lớn khách ghé lần đầu không thấy hành động chính
+              nào trên trang. Với khách chưa đăng nhập, cả hai đưa thẳng tới
+              đăng nhập (một tương tác thật, không phải nút chết). */}
+          <div className="hero-actions">
+            {currentUser ? (
+              <a href="#phan-hoi-thuc-te" className="button-primary">
+                Tôi đã thử cách này
+              </a>
+            ) : (
+              <Link href={`/sign-in?redirectTo=/how-to/${id}`} className="button-primary">
+                Tôi muốn thử cách này
+              </Link>
+            )}
+            {currentUser ? (
               <SaveToggleButton howToId={id} initiallySaved={initiallySaved} />
-            </div>
-          )}
+            ) : (
+              <Link href={`/sign-in?redirectTo=/how-to/${id}`} className="button-secondary">
+                ☆ Lưu lại
+              </Link>
+            )}
+          </div>
 
           {(ingredients ?? []).length > 0 && (
             <>
@@ -376,7 +394,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           </div>
         </div>
 
-        <aside className="evidence-rail" aria-label="Phản hồi thực tế từ người đã thử">
+        <aside id="phan-hoi-thuc-te" className="evidence-rail" aria-label="Phản hồi thực tế từ người đã thử">
           <span className="eyebrow">Phản hồi thực tế</span>
           <section className="outcome-stats">
             {attemptCount === 0 ? (

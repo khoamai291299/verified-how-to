@@ -236,8 +236,43 @@ a {
   transform: translateY(1px);
 }
 
+/* Bản outline của .button-primary, an toàn dùng trên cả <a> lẫn <button>
+   (khác với button.secondary, vốn chỉ định nghĩa cho phần tử button). */
+.button-secondary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ember-deep);
+  font-weight: 700;
+  font-size: 0.94rem;
+  text-decoration: none;
+  border: 1px solid var(--color-line);
+  transition: border-color 0.14s ease, background-color 0.14s ease;
+}
+
+.button-secondary:hover {
+  border-color: var(--color-ember);
+  background: var(--color-ember-tint);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-bottom: var(--space-md);
+}
+
+.hero-actions form {
+  margin: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .button-primary {
+  .button-primary,
+  .button-secondary {
     transition: none;
   }
 }
@@ -861,6 +896,7 @@ ul {
 /* ---- Real Feedback rail — surface giấy, một vạch kraft-deep bên trái làm
    tín hiệu duy nhất phân lớp; không còn khối kraft đặc. ---- */
 .evidence-rail {
+  scroll-margin-top: 80px;
   margin-top: var(--space-xl);
   background: var(--color-paper-raised);
   border: 1px solid var(--color-line);
