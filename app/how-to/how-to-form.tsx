@@ -1,49 +1,108 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import type { Category, CategoryDimension } from "@/lib/supabase/types";
 import { CATEGORY_DIMENSION_LABELS } from "@/lib/supabase/types";
+import { parseIngredientText } from "@/lib/ingredient-parser";
 import type { HowToFormInitialValues, HowToFormState } from "./how-to-form-types";
 
 type IngredientRow = { key: number; name: string; quantity: string; unit: string };
 
-function IngredientListField({ disabled, initial }: { disabled: boolean; initial: IngredientRow[] }) {
-  const [rows, setRows] = useState<IngredientRow[]>(initial);
-  const [nextKey, setNextKey] = useState(initial.length);
+/**
+ * Nhập nguyên liệu bằng văn bản tự nhiên trước, tách thành các dòng có cấu
+ * trúc để người dùng xem lại/sửa — không có dòng nào được lưu cho tới khi
+ * người dùng bấm nút đăng ở cuối form (mission §11: "AI suggests, user
+ * confirms"; ở đây là parser tất định, không phải AI, nhưng nguyên tắc xác
+ * nhận thủ công trước khi lưu giữ nguyên).
+ */
+function IngredientListField({
+  disabled,
+  rows,
+  onChange,
+}: {
+  disabled: boolean;
+  rows: IngredientRow[];
+  onChange: (rows: IngredientRow[]) => void;
+}) {
+  const nextKeyRef = useRef(rows.length);
+  const [rawText, setRawText] = useState("");
+  const [parseNotice, setParseNotice] = useState<string | null>(null);
 
   function addRow() {
-    setRows((r) => [...r, { key: nextKey, name: "", quantity: "", unit: "" }]);
-    setNextKey((k) => k + 1);
+    onChange([...rows, { key: nextKeyRef.current++, name: "", quantity: "", unit: "" }]);
   }
 
   function removeRow(key: number) {
-    setRows((r) => (r.length > 1 ? r.filter((row) => row.key !== key) : r));
+    onChange(rows.length > 1 ? rows.filter((row) => row.key !== key) : rows);
+  }
+
+  function updateRow(key: number, patch: Partial<IngredientRow>) {
+    onChange(rows.map((row) => (row.key === key ? { ...row, ...patch } : row)));
+  }
+
+  function handleParse() {
+    const parsed = parseIngredientText(rawText);
+    if (parsed.length === 0) {
+      setParseNotice("Không nhận ra nguyên liệu nào — hãy thử viết mỗi nguyên liệu cách nhau bằng dấu phẩy.");
+      return;
+    }
+    const hasManualContent = rows.some((r) => r.name.trim().length > 0);
+    const parsedRows = parsed.map((p) => ({ key: nextKeyRef.current++, ...p }));
+    onChange(hasManualContent ? [...rows, ...parsedRows] : parsedRows);
+    setParseNotice(
+      `Đã tách ${parsed.length} nguyên liệu — kiểm tra lại bên dưới, sửa nếu cần trước khi đăng.`,
+    );
+    setRawText("");
   }
 
   return (
     <div>
       <span className="eyebrow">Nguyên liệu (tùy chọn)</span>
+
+      <div className="ingredient-parser">
+        <label htmlFor="ingredientText">Viết tự nhiên, hệ thống sẽ tách giúp bạn</label>
+        <textarea
+          id="ingredientText"
+          rows={2}
+          placeholder="vd: 500g thịt ba chỉ, 3 quả trứng gà, 5 củ hành tím, nước mắm, đường, tiêu và một ít dầu ăn"
+          value={rawText}
+          onChange={(e) => setRawText(e.target.value)}
+          disabled={disabled}
+        />
+        <button type="button" className="secondary" onClick={handleParse} disabled={disabled || rawText.trim().length === 0}>
+          Tách nguyên liệu
+        </button>
+        {parseNotice && (
+          <p className="parse-notice" role="status">
+            {parseNotice}
+          </p>
+        )}
+      </div>
+
       {rows.map((row, index) => (
         <div className="ingredient-row" key={row.key}>
           <input
             name="ingredientName"
             aria-label={`Tên nguyên liệu ${index + 1}`}
             placeholder="Tên nguyên liệu"
-            defaultValue={row.name}
+            value={row.name}
+            onChange={(e) => updateRow(row.key, { name: e.target.value })}
             disabled={disabled}
           />
           <input
             name="ingredientQuantity"
             aria-label={`Số lượng nguyên liệu ${index + 1}`}
             placeholder="Số lượng"
-            defaultValue={row.quantity}
+            value={row.quantity}
+            onChange={(e) => updateRow(row.key, { quantity: e.target.value })}
             disabled={disabled}
           />
           <input
             name="ingredientUnit"
             aria-label={`Đơn vị nguyên liệu ${index + 1}`}
             placeholder="Đơn vị"
-            defaultValue={row.unit}
+            value={row.unit}
+            onChange={(e) => updateRow(row.key, { unit: e.target.value })}
             disabled={disabled}
           />
           {rows.length > 1 && (
@@ -181,10 +240,11 @@ export function HowToForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
 
-  const ingredientRows: IngredientRow[] =
+  const [ingredientRows, setIngredientRows] = useState<IngredientRow[]>(
     initial.ingredients.length > 0
       ? initial.ingredients.map((ing, i) => ({ key: i, ...ing }))
-      : [{ key: 0, name: "", quantity: "", unit: "" }];
+      : [{ key: 0, name: "", quantity: "", unit: "" }],
+  );
   const stepRows =
     initial.steps.length > 0 ? initial.steps.map((text, i) => ({ key: i, text })) : [{ key: 0, text: "" }];
 
@@ -255,7 +315,7 @@ export function HowToForm({
         disabled={pending}
       />
 
-      <IngredientListField disabled={pending} initial={ingredientRows} />
+      <IngredientListField disabled={pending} rows={ingredientRows} onChange={setIngredientRows} />
 
       <StepListField disabled={pending} describedBy={state.fieldErrors?.steps ? "steps-error" : undefined} initial={stepRows} />
       {state.fieldErrors?.steps && (

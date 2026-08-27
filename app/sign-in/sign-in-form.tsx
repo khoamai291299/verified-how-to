@@ -45,6 +45,9 @@ export function SignInForm({ redirectTo }: { redirectTo?: string }) {
             {state.fieldErrors.password}
           </p>
         )}
+        <p className="field-hint">
+          <Link href="/forgot-password">Quên mật khẩu?</Link>
+        </p>
       </div>
 
       {state.error && <p role="alert">{state.error}</p>}

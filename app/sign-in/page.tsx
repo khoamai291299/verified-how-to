@@ -6,11 +6,11 @@ export const metadata: Metadata = {
 };
 
 type SignInPageProps = {
-  searchParams: Promise<{ redirectTo?: string }>;
+  searchParams: Promise<{ redirectTo?: string; error?: string }>;
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
-  const { redirectTo } = await searchParams;
+  const { redirectTo, error } = await searchParams;
 
   return (
     <main className="auth-main">
@@ -18,6 +18,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
         <span className="eyebrow">Verified How-To</span>
         <h1>Đăng nhập</h1>
         <p className="supporting-text">Vào lại để tạo cách làm, chia sẻ kết quả thật, và xem nội dung bạn đã lưu.</p>
+        {error === "link-invalid" && <p role="alert">Liên kết đó không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.</p>}
         <SignInForm redirectTo={redirectTo} />
       </div>
     </main>
