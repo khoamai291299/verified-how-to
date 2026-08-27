@@ -37,7 +37,7 @@ export function SubmitAttemptReportForm({ howToId }: { howToId: string }) {
     <div id={formRegionId}>
       <h2>Bạn đã thử cách này?</h2>
 
-      {state.success && <p role="status">Kết quả của bạn đã được ghi nhận. Cảm ơn bạn đã giúp kiểm chứng cách làm này.</p>}
+      {state.success && <p role="status">Kết quả của bạn đã được ghi nhận. Cảm ơn bạn đã chia sẻ trải nghiệm thật.</p>}
 
       <form action={formAction} ref={formRef} className="attempt-form-fields">
         <fieldset aria-describedby={state.fieldErrors?.result ? "result-error" : undefined}>
@@ -63,7 +63,7 @@ export function SubmitAttemptReportForm({ howToId }: { howToId: string }) {
         </div>
 
         <div>
-          <label id="evidence-group-label">Bằng chứng (tùy chọn)</label>
+          <label id="evidence-group-label">Ảnh kết quả (tùy chọn)</label>
           <div className="evidence-upload-group" role="group" aria-labelledby="evidence-group-label">
             <div>
               <label htmlFor="image1">Ảnh 1</label>
@@ -109,7 +109,7 @@ export function SubmitAttemptReportForm({ howToId }: { howToId: string }) {
         {state.error && <p role="alert">{state.error}</p>}
 
         <button type="submit" disabled={pending}>
-          {pending ? "Đang gửi…" : "Gửi kết quả"}
+          {pending ? "Đang chia sẻ…" : "Chia sẻ kết quả"}
         </button>
       </form>
     </div>

@@ -131,7 +131,7 @@ export default async function DiscoverPage() {
               ))}
             </div>
             <p className="hero-stat">
-              {totalAttempts} lần thử thật{totalEvidence > 0 ? ` · ${totalEvidence} bằng chứng` : ""} trên {cards.length}{" "}
+              {totalAttempts} lần thử thật{totalEvidence > 0 ? ` · ${totalEvidence} ảnh kết quả` : ""} trên {cards.length}{" "}
               cách làm
             </p>
           </div>
@@ -180,7 +180,7 @@ export default async function DiscoverPage() {
                         )}
                       </div>
                       <p className="tally-caption">
-                        {card.attempts} lần thử{card.evidence > 0 ? ` · ${card.evidence} bằng chứng` : ""}
+                        {card.attempts} lần thử{card.evidence > 0 ? ` · ${card.evidence} ảnh kết quả` : ""}
                       </p>
                       <p className="sr-only">
                         {card.results.filter((r) => r === "success").length} thành công ·{" "}

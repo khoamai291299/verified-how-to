@@ -21,10 +21,10 @@ export function DeleteAttemptReportButton({
   return (
     <ConfirmDeleteDialog
       triggerLabel="×"
-      triggerAriaLabel={`Xóa báo cáo ${reportLabel}`}
+      triggerAriaLabel={`Xóa lần thử ${reportLabel}`}
       triggerClassName="field-note-delete"
-      title="Xóa báo cáo đã thử?"
-      message="Báo cáo này và ảnh đính kèm (nếu có) sẽ bị xóa vĩnh viễn. Không thể hoàn tác."
+      title="Xóa lần thử này?"
+      message="Lần thử này và ảnh đính kèm (nếu có) sẽ bị xóa vĩnh viễn. Không thể hoàn tác."
       confirmLabel="Xóa vĩnh viễn"
       pending={pending}
       error={state.error}

@@ -226,8 +226,8 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           </div>
         </div>
 
-        <aside className="evidence-rail" aria-label="Bằng chứng và báo cáo đã thử">
-          <span className="eyebrow">Bằng chứng</span>
+        <aside className="evidence-rail" aria-label="Phản hồi thực tế từ người đã thử">
+          <span className="eyebrow">Phản hồi thực tế</span>
           <section className="outcome-stats">
             {attemptCount === 0 ? (
               <p className="stat-line">Chưa có lượt thử</p>
@@ -237,7 +237,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
                 <p className="stat-line">
                   {successCount} thành công · {partialCount} một phần · {failedCount} thất bại
                 </p>
-                {evidenceCount > 0 && <p className="stat-line">{evidenceCount} bằng chứng</p>}
+                {evidenceCount > 0 && <p className="stat-line">{evidenceCount} ảnh kết quả</p>}
               </>
             )}
           </section>
@@ -249,7 +249,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           <hr className="evidence-rail-divider" />
 
           {reportViews.length === 0 ? (
-            <p className="evidence-empty">Chưa có bằng chứng thực tế</p>
+            <p className="evidence-empty">Chưa có ai chia sẻ kết quả</p>
           ) : (
             <>
               <ul className="evidence-list">
@@ -260,7 +260,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
               {reportViews.length > VISIBLE_TICKET_COUNT && (
                 <details className="evidence-more">
-                  <summary>Xem thêm {reportViews.length - VISIBLE_TICKET_COUNT} báo cáo cũ hơn</summary>
+                  <summary>Xem thêm {reportViews.length - VISIBLE_TICKET_COUNT} lần thử cũ hơn</summary>
                   <ul className="evidence-list">
                     {reportViews.slice(VISIBLE_TICKET_COUNT).map((report) => (
                       <EvidenceTicketItem key={report.id} report={report} howToId={id} />
