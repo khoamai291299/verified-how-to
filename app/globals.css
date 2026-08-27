@@ -1,43 +1,50 @@
 /* =========================================================================
-   VERIFIED HOW-TO — DESIGN SYSTEM V2
+   VERIFIED HOW-TO — DESIGN SYSTEM V3
    -------------------------------------------------------------------------
-   Ngôn ngữ thị giác: "sổ ghi chép thực địa" (field notebook), trừu tượng hóa
-   khỏi việc mô phỏng giấy/kraft vật lý theo đúng chỉ đạo redesign — chỉ giữ
-   lại CƠ CHẾ phân biệt hai lớp thông tin (§ hệ thống màu + hai giọng chữ),
-   bỏ toàn bộ hiệu ứng trang trí literal (phiếu nghiêng, viền xé giấy, khối
-   kraft đặc). Ảnh bằng chứng thật là trọng tâm thị giác — không phải hộp
-   màu be flooded.
+   Pivot khỏi "da giấy/kraft" (V1/V2) sang một sản phẩm editorial hiện đại,
+   tự tin: "sổ tay thực hành thật" giờ chỉ còn là GIỌNG NÓI thương hiệu/nội
+   dung, không còn là lớp da thị giác phủ lên mọi thành phần. Nền chuyển từ
+   giấy be sang gần-trắng; màu hành động chính chuyển từ navy (xanh nút bấm
+   SaaS chung chung) sang ember — một màu đỏ cam ấm, đặc trưng ẩm thực, tự
+   tin hơn. Mono bị giới hạn lại CHỈ cho dữ liệu số thật (mốc thời gian, số
+   lượng nguyên liệu, số đếm) — không còn dùng cho nhãn cấu trúc (eyebrow,
+   tag, dish-label) như V2, vì đó chính là thứ khiến sản phẩm đọc như một
+   ứng dụng sổ tay độc lập thay vì một sản phẩm ẩm thực thật.
    ========================================================================= */
 
 :root {
-  /* ---- Surfaces ---- */
-  --color-paper: #eee9dd;
-  --color-paper-raised: #faf8f1;
-  --color-paper-deep: #e3ddc9;
+  /* ---- Surfaces: gần-trắng, không còn "giấy be" ---- */
+  --color-paper: #fbf9f4;
+  --color-paper-raised: #ffffff;
+  --color-paper-deep: #f1ede2;
 
   /* ---- Ink (narrative voice) ---- */
-  --color-ink: #1f1c16;
-  --color-ink-soft: #645e4c;
-  --color-ink-faint: #948c76;
+  --color-ink: #17140f;
+  --color-ink-soft: #5c5647;
+  --color-ink-faint: #8c8574;
 
   /* ---- Lines ---- */
-  --color-line: #d9d1b8;
-  --color-line-soft: #e7e0cb;
+  --color-line: #e3ddcd;
+  --color-line-soft: #edeae0;
 
-  /* ---- Navy (action / navigation) ---- */
-  --color-navy: #223e61;
-  --color-navy-deep: #16283f;
-  --color-navy-tint: rgba(34, 62, 97, 0.09);
+  /* ---- Ember: màu hành động chính — đỏ cam ấm, đặc trưng ẩm thực, thay
+     cho navy "nút bấm SaaS chung chung". Giá trị chọn để chữ trắng trên nền
+     ember ĐẠT AA (contrast 6.2:1, kiểm tra bằng script) — bản #d34a2a sáng
+     hơn ban đầu chỉ đạt 4.4:1, dưới ngưỡng 4.5:1 cho chữ thường. ---- */
+  --color-ember: #ac3a20;
+  --color-ember-deep: #8a2f1a;
+  --color-ember-tint: rgba(172, 58, 32, 0.08);
 
-  /* ---- Kraft (real-feedback accent — used sparingly as accent, never flood) ---- */
+  /* ---- Kraft — thu hẹp phạm vi: CHỈ còn là dấu hiệu riêng cho "phản hồi
+     thực tế", không còn là accent chung của sản phẩm ---- */
   --color-kraft: #b9855a;
   --color-kraft-deep: #8a5d34;
   --color-kraft-tint: rgba(185, 133, 90, 0.14);
 
   /* ---- Self-reported outcomes (never a system verdict — text-safe AA values) ---- */
-  --color-moss: #45643f;
+  --color-moss: #3f6b45;
   --color-amber: #8a6428;
-  --color-brick: #9a3826;
+  --color-brick: #93341f;
   --color-brick-bg: #a8412f;
 
   --background: var(--color-paper);
@@ -101,11 +108,11 @@ body {
 }
 
 a {
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-navy);
+  outline: 2px solid var(--color-ember);
   outline-offset: 2px;
   border-radius: 2px;
 }
@@ -156,12 +163,11 @@ a {
 }
 
 .brand-word span {
-  color: var(--color-kraft-deep);
+  color: var(--color-ember-deep);
 }
 
 .brand-kicker {
   display: none;
-  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.66rem;
   letter-spacing: 0.05em;
   color: var(--color-ink-faint);
@@ -189,7 +195,7 @@ a {
 
 .site-nav a:not(.button-primary):hover,
 .site-nav a:not(.button-primary):focus-visible {
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
 }
 
 .nav-text-link {
@@ -208,12 +214,12 @@ a {
   min-height: 40px;
   padding: 0.55rem 1.1rem;
   border-radius: var(--radius-md);
-  background: var(--color-navy);
+  background: var(--color-ember);
   color: #fff;
   font-weight: 700;
   font-size: 0.94rem;
   text-decoration: none;
-  border: 1px solid var(--color-navy);
+  border: 1px solid var(--color-ember);
   transition:
     background-color 0.14s ease,
     transform 0.06s ease,
@@ -221,9 +227,9 @@ a {
 }
 
 .button-primary:hover {
-  background: var(--color-navy-deep);
-  border-color: var(--color-navy-deep);
-  box-shadow: 0 3px 10px rgba(22, 40, 63, 0.25);
+  background: var(--color-ember-deep);
+  border-color: var(--color-ember-deep);
+  box-shadow: 0 3px 10px rgba(172, 58, 32, 0.22);
 }
 
 .button-primary:active {
@@ -298,7 +304,7 @@ a {
 }
 
 .bottom-nav-item[aria-current="page"] {
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
 }
 
 .bottom-nav-item-create {
@@ -312,9 +318,9 @@ a {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: var(--color-navy);
+  background: var(--color-ember);
   margin-top: -18px;
-  box-shadow: 0 4px 12px rgba(22, 40, 63, 0.35);
+  box-shadow: 0 4px 12px rgba(172, 58, 32, 0.3);
 }
 
 .bottom-nav-item-create svg {
@@ -406,10 +412,9 @@ h2 {
 
 .eyebrow {
   display: block;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--color-ink-faint);
   margin-bottom: var(--space-xs);
@@ -468,8 +473,8 @@ textarea {
 
 input:focus-visible,
 textarea:focus-visible {
-  border-color: var(--color-navy);
-  box-shadow: 0 0 0 3px var(--color-navy-tint);
+  border-color: var(--color-ember);
+  box-shadow: 0 0 0 3px var(--color-ember-tint);
 }
 
 input[type="file"] {
@@ -485,8 +490,8 @@ button {
   min-height: 44px;
   min-width: 44px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-navy);
-  background: var(--color-navy);
+  border: 1px solid var(--color-ember);
+  background: var(--color-ember);
   color: #fff;
   cursor: pointer;
   transition:
@@ -497,9 +502,9 @@ button {
 }
 
 button:not(.secondary):not(.subtle):not(.danger):not(.contribute-invite):hover:not([disabled]) {
-  background: var(--color-navy-deep);
-  border-color: var(--color-navy-deep);
-  box-shadow: 0 3px 10px rgba(22, 40, 63, 0.22);
+  background: var(--color-ember-deep);
+  border-color: var(--color-ember-deep);
+  box-shadow: 0 3px 10px rgba(172, 58, 32, 0.2);
 }
 
 button:active:not([disabled]) {
@@ -513,13 +518,13 @@ button[disabled] {
 
 button.secondary {
   background: transparent;
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
   border-color: var(--color-line);
 }
 
 button.secondary:hover:not([disabled]) {
-  background: var(--color-navy-tint);
-  border-color: var(--color-navy);
+  background: var(--color-ember-tint);
+  border-color: var(--color-ember);
 }
 
 button.danger {
@@ -606,12 +611,11 @@ ul {
 }
 
 .ingredient-group-name {
-  font-family: var(--font-mono), ui-monospace, monospace;
   font-weight: 500;
   font-size: 0.78rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--color-kraft-deep);
+  color: var(--color-ink-faint);
   margin-bottom: 0.5rem;
 }
 
@@ -682,12 +686,12 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--color-navy);
+  border: 1.5px solid var(--color-ember);
   border-radius: 50%;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.85rem;
   font-weight: 500;
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
   background: var(--color-paper-raised);
 }
 
@@ -771,7 +775,7 @@ ul {
 
 .result-option:has(input:checked) {
   border-color: var(--color-ink);
-  background: var(--color-navy-tint);
+  background: var(--color-ember-tint);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -809,7 +813,7 @@ ul {
 }
 
 .expected-outcome .eyebrow {
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
 }
 
 .expected-outcome p {
@@ -981,7 +985,7 @@ ul {
   cursor: pointer;
   font-weight: 600;
   font-size: 0.9rem;
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
   padding: 0.4rem 0;
   list-style: none;
 }
@@ -1031,15 +1035,14 @@ ul {
   background: var(--color-paper-raised);
 }
 
-.search-form button.secondary {
+.search-form button {
   padding: 0.85rem 1.3rem;
   border-radius: var(--radius-md);
-  border: 1.5px solid var(--color-navy);
 }
 
 .dish-label {
   display: inline-block;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-weight: 600;
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1050,13 +1053,13 @@ ul {
 
 .dish-label:hover,
 .dish-label:focus-visible {
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
   text-decoration: underline;
 }
 
 .match-reason {
   font-size: 0.85rem;
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
 }
 
 .eyebrow-link {
@@ -1095,7 +1098,7 @@ ul {
 .product-thesis {
   font-size: clamp(1.4rem, 1.1rem + 1.3vw, 2rem);
   font-weight: 500;
-  color: var(--color-kraft-deep);
+  color: var(--color-ember-deep);
   line-height: 1.15;
   letter-spacing: -0.01em;
   margin-top: 0.1rem;
@@ -1137,7 +1140,7 @@ ul {
 .hero-stat {
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.85rem;
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
   text-align: right;
 }
 
@@ -1160,7 +1163,6 @@ ul {
 }
 
 .category-chip-dimension {
-  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -1193,13 +1195,13 @@ ul {
 
 .category-chip:hover,
 .category-chip:focus-visible {
-  border-color: var(--color-navy);
-  color: var(--color-navy);
+  border-color: var(--color-ember);
+  color: var(--color-ember-deep);
 }
 
 .category-chip-active {
-  background: var(--color-navy);
-  border-color: var(--color-navy);
+  background: var(--color-ember);
+  border-color: var(--color-ember);
   color: #fff;
 }
 
@@ -1274,7 +1276,6 @@ ul {
 }
 
 .story-result {
-  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.72rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -1301,7 +1302,6 @@ ul {
 }
 
 .story-source {
-  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   color: var(--color-ink-faint);
 }
@@ -1311,17 +1311,93 @@ ul {
   flex-direction: column;
 }
 
-.howto-list-featured {
-  border: 1px solid var(--color-line);
-  border-left: 3px solid var(--color-kraft);
-  border-radius: var(--radius-md);
-  padding: 0 var(--space-md);
+/* Kệ "Nổi bật" — điểm ảnh-là-trọng-tâm duy nhất trên Khám phá: lưới thẻ
+   ảnh lớn thay vì danh sách dòng, dành riêng cho một vài mục được chọn.
+   Danh sách đầy đủ bên dưới vẫn ở dạng chỉ mục dày đặc để quét nhanh —
+   đây KHÔNG phải một lưới Pinterest cho toàn bộ nội dung, chỉ cho kệ biên
+   tập nhỏ này. */
+.featured-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
   margin-bottom: var(--space-xl);
-  background: var(--color-paper-raised);
 }
 
-.howto-list-featured .howto-entry:first-child {
-  border-top: none;
+@media (min-width: 640px) {
+  .featured-grid {
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  }
+}
+
+.featured-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-line);
+  transition: box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.featured-card:hover,
+.featured-card:focus-visible {
+  box-shadow: 0 10px 24px rgba(23, 20, 15, 0.1);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featured-card {
+    transition: none;
+  }
+
+  .featured-card:hover,
+  .featured-card:focus-visible {
+    transform: none;
+  }
+}
+
+.featured-card-image {
+  width: 100%;
+  height: 11.5rem;
+  background: var(--color-paper-deep);
+}
+
+.featured-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.featured-card-image .specimen-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.featured-card-body {
+  padding: var(--space-md);
+}
+
+.featured-card-body h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.3rem;
+  color: var(--color-ink);
+}
+
+.featured-card-body .supporting-text {
+  font-size: 0.92rem;
+  margin-bottom: 0.5rem;
+}
+
+.featured-card-stat {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  color: var(--color-ink-soft);
 }
 
 .howto-entry {
@@ -1394,7 +1470,7 @@ ul {
 .howto-entry h2 a {
   color: var(--color-ink);
   text-decoration: none;
-  background-image: linear-gradient(var(--color-navy), var(--color-navy));
+  background-image: linear-gradient(var(--color-ember), var(--color-ember));
   background-position: 0 100%;
   background-repeat: no-repeat;
   background-size: 0% 1.5px;
@@ -1403,7 +1479,7 @@ ul {
 
 .howto-entry h2 a:hover,
 .howto-entry h2 a:focus-visible {
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
   background-size: 100% 1.5px;
 }
 
@@ -1517,7 +1593,7 @@ ul {
 .secondary-link {
   font-weight: 600;
   font-size: 0.85rem;
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
 }
 
 .category-tags {
@@ -1530,7 +1606,7 @@ ul {
 
 .category-tag {
   display: inline-block;
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-weight: 600;
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1543,8 +1619,8 @@ ul {
 
 .category-tag:hover,
 .category-tag:focus-visible {
-  color: var(--color-navy);
-  border-color: var(--color-navy);
+  color: var(--color-ember-deep);
+  border-color: var(--color-ember);
 }
 
 /* Ảnh minh họa tác giả — cố ý khác hẳn ảnh bằng chứng thật (khung lớn, bo góc
@@ -1666,7 +1742,7 @@ ul {
   padding: 0.5rem 0;
   border: none;
   background: transparent;
-  color: var(--color-navy);
+  color: var(--color-ember-deep);
   font-weight: 700;
   font-size: 1.1rem;
   text-decoration: underline;
@@ -1675,7 +1751,7 @@ ul {
 }
 
 .contribute-invite:hover:not([disabled]) {
-  color: var(--color-navy-deep);
+  color: color-mix(in srgb, var(--color-ember-deep) 82%, black);
 }
 
 .attempt-cta-container h2 {
@@ -1715,7 +1791,6 @@ ul {
 }
 
 .site-footer p {
-  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;
   color: var(--color-ink-faint);
   max-width: 32rem;

@@ -141,6 +141,32 @@ function HowToCardRow({ card, query }: { card: HowToCardData; query: string }) {
   );
 }
 
+/** Thẻ ảnh lớn cho kệ "Nổi bật" — ảnh là điểm neo thị giác chính, khác hẳn
+ * dòng danh mục dày đặc của danh sách đầy đủ bên dưới. */
+function FeaturedCard({ card }: { card: HowToCardData }) {
+  return (
+    <Link href={`/how-to/${card.id}`} className="featured-card">
+      <div className="featured-card-image" aria-hidden="true">
+        {card.specimenUrl ? (
+          <img src={card.specimenUrl} alt="" />
+        ) : (
+          <span className="specimen-empty" />
+        )}
+      </div>
+      <div className="featured-card-body">
+        {card.dishName && <span className="dish-label">{card.dishName}</span>}
+        <h3>{card.title}</h3>
+        {card.description && <p className="supporting-text">{card.description}</p>}
+        <p className="featured-card-stat">
+          {card.attempts === 0
+            ? "Chưa có lượt thử"
+            : `${card.attempts} lần thử${card.evidence > 0 ? ` · ${card.evidence} ảnh kết quả` : ""}`}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
   const { q, category: categorySlug } = await searchParams;
   const query = (q ?? "").trim();
@@ -338,9 +364,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           defaultValue={query}
           placeholder="Tìm theo tên, nguyên liệu…"
         />
-        <button type="submit" className="secondary">
-          Tìm
-        </button>
+        <button type="submit">Tìm</button>
       </form>
 
       <section className="hero">
@@ -415,11 +439,11 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
       {featured.length > 0 && (
         <section aria-label="Được thử nhiều nhất">
           <span className="eyebrow">Được thử nhiều nhất</span>
-          <ul className="howto-list howto-list-featured">
+          <div className="featured-grid">
             {featured.map((card) => (
-              <HowToCardRow key={card.id} card={card} query={query} />
+              <FeaturedCard key={card.id} card={card} />
             ))}
-          </ul>
+          </div>
         </section>
       )}
 
