@@ -88,26 +88,32 @@ export default async function DiscoverPage() {
       ) : (
         <ul className="howto-list">
           {cards.map((card) => (
-            <li key={card.id} className="howto-card">
-              <h2>
-                <Link href={`/how-to/${card.id}`}>{card.title}</Link>
-              </h2>
-              {card.description && <p className="supporting-text">{card.description}</p>}
+            <li key={card.id}>
+              <div className="howto-entry">
+                <div className="howto-entry-main">
+                  <h2>
+                    <Link href={`/how-to/${card.id}`}>{card.title}</Link>
+                  </h2>
+                  {card.description && <p className="supporting-text">{card.description}</p>}
+                  <div className="card-footer">
+                    <Link href={`/how-to/${card.id}`}>Xem cách làm →</Link>
+                  </div>
+                </div>
 
-              {card.attempts === 0 ? (
-                <p className="stat-line">Chưa có lượt thử</p>
-              ) : (
-                <>
-                  <p className="stat-line">{card.attempts} người đã thử</p>
-                  <p className="stat-line">
-                    {card.success} thành công · {card.partial} một phần · {card.failed} {RESULT_LABELS.failed.toLowerCase()}
-                  </p>
-                </>
-              )}
-              {card.evidence > 0 && <p className="stat-line">{card.evidence} bằng chứng</p>}
-
-              <div className="card-footer">
-                <Link href={`/how-to/${card.id}`}>Xem cách làm →</Link>
+                <div className="howto-entry-stats">
+                  {card.attempts === 0 ? (
+                    <p className="stat-line">Chưa có lượt thử</p>
+                  ) : (
+                    <>
+                      <p className="stat-line">{card.attempts} người đã thử</p>
+                      <p className="stat-line">
+                        {card.success} thành công · {card.partial} một phần · {card.failed}{" "}
+                        {RESULT_LABELS.failed.toLowerCase()}
+                      </p>
+                    </>
+                  )}
+                  {card.evidence > 0 && <p className="stat-line">{card.evidence} bằng chứng</p>}
+                </div>
               </div>
             </li>
           ))}

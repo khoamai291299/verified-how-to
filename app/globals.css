@@ -8,6 +8,8 @@
   --color-moss: #5b7a5a;
   --color-amber: #b4863a;
   --color-kraft: #c9a97b;
+  --color-kraft-rail: #d9c39c;
+  --color-kraft-border: #b08e5f;
   --color-border: #cdc9bb;
   --background: var(--color-paper);
   --foreground: var(--color-ink);
@@ -18,6 +20,10 @@
   --space-lg: 2rem;
   --space-xl: 3rem;
   --radius: 6px;
+
+  --content-width: 40rem;
+  --detail-width: 68rem;
+  --rail-width: 21rem;
 }
 
 html {
@@ -98,9 +104,13 @@ header {
 
 main {
   width: 100%;
-  max-width: 40rem;
+  max-width: var(--content-width);
   margin: 0 auto;
   padding: var(--space-lg) var(--space-md) var(--space-xl);
+}
+
+main.main-detail {
+  max-width: var(--detail-width);
 }
 
 h1,
@@ -250,12 +260,6 @@ ul {
   padding-left: 0;
 }
 
-ul li + li {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
-}
-
 .step-row {
   display: flex;
   align-items: center;
@@ -290,81 +294,208 @@ ul li + li {
   background: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 
-.evidence-section {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
+/* Trang chi tiết Cách làm — hai vùng: nội dung (giấy) + Bằng chứng (kraft), theo
+   design-direction.md §5–§6. Vùng Bằng chứng là một "bề mặt" riêng, sticky trên
+   desktop, để hai lớp thông tin luôn phân biệt được bằng mắt. */
+.howto-layout {
+  display: block;
 }
 
-.evidence-item {
-  background: var(--color-kraft);
-  padding: 1rem;
-  border-radius: 4px;
+@media (min-width: 880px) {
+  .howto-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--rail-width);
+    gap: var(--space-xl);
+    align-items: start;
+  }
+}
+
+.howto-main {
+  min-width: 0;
+}
+
+.evidence-rail {
+  margin-top: var(--space-xl);
+  background: var(--color-kraft-rail);
+  border: 1px solid var(--color-kraft-border);
+  border-radius: var(--radius);
+  padding: var(--space-md);
+}
+
+@media (min-width: 880px) {
+  .evidence-rail {
+    margin-top: 0;
+    position: sticky;
+    top: var(--space-lg);
+  }
+}
+
+.evidence-rail .eyebrow {
+  color: var(--color-ink);
+  opacity: 0.65;
+}
+
+.evidence-rail-divider {
+  border: none;
+  border-top: 1px dashed var(--color-kraft-border);
+  margin: var(--space-md) 0;
+}
+
+.evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* Phiếu Báo Cáo Thử — chữ ký thị giác của sản phẩm (design-direction.md §8).
+   Viền trên đứt nét gợi ý mép xé; nghiêng nhẹ luân phiên, không lặp lại khi cuộn. */
+.evidence-ticket {
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-border);
+  border-top: 3px dashed var(--color-kraft-border);
+  border-radius: 3px;
+  padding: var(--space-sm) var(--space-md) var(--space-md);
+  box-shadow: 0 1px 2px rgba(38, 37, 31, 0.08);
+  transform: rotate(-0.6deg);
+}
+
+.evidence-list li:nth-child(even) .evidence-ticket {
+  transform: rotate(0.5deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evidence-ticket {
+    transform: none;
+  }
+}
+
+.evidence-ticket-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: 0.35rem;
 }
 
 .evidence-timestamp {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
 }
 
 .evidence-result {
-  font-weight: 600;
+  font-weight: 700;
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--color-border);
+}
+
+.evidence-result[data-result="success"] {
+  border-left-color: var(--color-moss);
+}
+
+.evidence-result[data-result="partial"] {
+  border-left-color: var(--color-amber);
+}
+
+.evidence-result[data-result="failed"] {
+  border-left-color: var(--color-brick);
+}
+
+.evidence-note {
+  margin-top: 0.35rem;
 }
 
 .evidence-images {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 0.6rem;
 }
 
 .evidence-image {
-  width: 96px;
-  height: 96px;
+  width: 84px;
+  height: 84px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 3px;
   border: 1px solid var(--color-border);
 }
 
-/* Discover */
+.evidence-ticket-foot {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
 
+.evidence-empty {
+  color: var(--color-ink-soft);
+  font-style: normal;
+}
+
+/* Khám phá — danh sách kiểu "mục lục sổ tay" (design-direction.md §5): không phải
+   lưới thẻ kiểu SaaS, không phải lưới ảnh Pinterest. Các mục phân cách bằng
+   đường kẻ, tiêu đề lớn đọc như một mục lục, chỉ báo số lần thử ở cột riêng bằng mono. */
 .hero {
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  max-width: 34rem;
 }
 
 .hero h1 {
-  font-size: 1.9rem;
+  font-size: 2.1rem;
+  line-height: 1.2;
 }
 
 .howto-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
 }
 
-.howto-card {
-  background: var(--color-paper-raised);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  padding: var(--space-md);
+.howto-entry {
+  padding: var(--space-md) 0;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-sm) var(--space-lg);
 }
 
-.howto-card h2 {
-  font-size: 1.15rem;
+.howto-list li:last-child .howto-entry {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.howto-entry-main {
+  flex: 1 1 20rem;
+  min-width: 0;
+}
+
+.howto-entry h2 {
+  font-size: 1.3rem;
   margin-bottom: 0.35rem;
 }
 
-.howto-card h2 a {
+.howto-entry h2 a {
   color: var(--foreground);
   text-decoration: none;
+  background-image: linear-gradient(var(--color-ink-blue), var(--color-ink-blue));
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 0.15s ease;
 }
 
-.howto-card h2 a:hover {
-  text-decoration: underline;
+.howto-entry h2 a:hover,
+.howto-entry h2 a:focus-visible {
+  color: var(--color-ink-blue);
+  background-size: 100% 1px;
 }
 
-.howto-card .supporting-text {
-  margin-bottom: var(--space-sm);
+.howto-entry .supporting-text {
+  margin-bottom: 0;
+}
+
+.howto-entry-stats {
+  flex: 0 0 auto;
+  text-align: right;
 }
 
 .stat-line {
@@ -372,17 +503,17 @@ ul li + li {
   font-size: 0.85rem;
   color: var(--color-ink-soft);
   margin-bottom: 0.2rem;
+  white-space: nowrap;
 }
 
 .card-footer {
   margin-top: var(--space-sm);
-  display: flex;
-  justify-content: flex-end;
 }
 
 .card-footer a {
   font-weight: 600;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 /* How-To detail */
@@ -403,19 +534,22 @@ ul li + li {
 }
 
 .outcome-stats {
-  margin-bottom: var(--space-md);
+  margin-bottom: 0;
 }
 
 .outcome-stats .stat-line {
   font-size: 0.95rem;
 }
 
-/* Attempt CTA */
+/* Attempt CTA — sống trong evidence-rail, ngay cạnh Bằng chứng mà nó sẽ đóng góp vào. */
 
-.attempt-cta-container {
-  margin-top: var(--space-lg);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--color-border);
+.attempt-cta-container .button-primary {
+  width: 100%;
+  justify-content: center;
+}
+
+.attempt-cta-container h2 {
+  font-size: 1.05rem;
 }
 
 .attempt-form-fields {

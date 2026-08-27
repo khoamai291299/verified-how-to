@@ -126,95 +126,106 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
   const evidenceCount = reportViews.reduce((sum, r) => sum + r.images.length, 0);
 
   return (
-    <main>
+    <main className="main-detail">
       <Link href="/" className="back-link">
         ← Khám phá
       </Link>
 
-      <span className="eyebrow">Cách làm</span>
-      <h1>{howTo.title}</h1>
-      {howTo.description && <p className="supporting-text">{howTo.description}</p>}
+      <div className="howto-layout">
+        <div className="howto-main">
+          <span className="eyebrow">Cách làm</span>
+          <h1>{howTo.title}</h1>
+          {howTo.description && <p className="supporting-text">{howTo.description}</p>}
 
-      <hr className="section-divider" />
-
-      <span className="eyebrow">Các bước</span>
-      <ol>
-        {(steps ?? []).map((step) => (
-          <li key={step.id}>{step.instruction}</li>
-        ))}
-      </ol>
-
-      {howTo.expected_outcome && (
-        <>
           <hr className="section-divider" />
-          <span className="eyebrow">Kết quả mong đợi</span>
-          <p>{howTo.expected_outcome}</p>
-        </>
-      )}
 
-      <hr className="section-divider" />
+          <span className="eyebrow">Các bước</span>
+          <ol>
+            {(steps ?? []).map((step) => (
+              <li key={step.id}>{step.instruction}</li>
+            ))}
+          </ol>
 
-      <section className="outcome-stats">
-        <span className="eyebrow">Kết quả thực tế</span>
-        {attemptCount === 0 ? (
-          <p className="stat-line">Chưa có lượt thử</p>
-        ) : (
-          <>
-            <p className="stat-line">{attemptCount} lần thử</p>
-            <p className="stat-line">
-              {successCount} thành công · {partialCount} một phần · {failedCount} thất bại
-            </p>
-            {evidenceCount > 0 && <p className="stat-line">{evidenceCount} bằng chứng</p>}
-          </>
-        )}
-      </section>
+          {howTo.expected_outcome && (
+            <>
+              <hr className="section-divider" />
+              <span className="eyebrow">Kết quả mong đợi</span>
+              <p>{howTo.expected_outcome}</p>
+            </>
+          )}
 
-      <section className="evidence-section">
-        <span className="eyebrow">Bằng chứng</span>
-        {reportViews.length === 0 ? (
-          <p>Chưa có bằng chứng thực tế</p>
-        ) : (
-          <ul>
-            {reportViews.map((report) => {
-              const formattedTimestamp = new Date(report.submitted_at).toLocaleString("vi-VN");
-              return (
-                <li key={report.id} className="evidence-item">
-                  <p className="evidence-timestamp">{formattedTimestamp}</p>
-                  <p className="evidence-result">{RESULT_LABELS[report.result]}</p>
-                  {report.note && <p>{report.note}</p>}
-                  {report.images.length > 0 && (
-                    <div className="evidence-images">
-                      {report.images.map(
-                        (image) =>
-                          image.signedUrl && (
-                            <img
-                              key={image.id}
-                              src={image.signedUrl}
-                              alt={`Ảnh bằng chứng ${image.position}`}
-                              className="evidence-image"
-                            />
-                          ),
+          <div className="detail-actions">
+            <DeleteHowToButton howToId={id} attemptReportCount={reportViews.length} />
+          </div>
+        </div>
+
+        <aside className="evidence-rail" aria-label="Bằng chứng và báo cáo đã thử">
+          <span className="eyebrow">Bằng chứng</span>
+          <section className="outcome-stats">
+            {attemptCount === 0 ? (
+              <p className="stat-line">Chưa có lượt thử</p>
+            ) : (
+              <>
+                <p className="stat-line">{attemptCount} lần thử</p>
+                <p className="stat-line">
+                  {successCount} thành công · {partialCount} một phần · {failedCount} thất bại
+                </p>
+                {evidenceCount > 0 && <p className="stat-line">{evidenceCount} bằng chứng</p>}
+              </>
+            )}
+          </section>
+
+          <div className="attempt-cta-container">
+            <SubmitAttemptReportForm howToId={id} />
+          </div>
+
+          <hr className="evidence-rail-divider" />
+
+          {reportViews.length === 0 ? (
+            <p className="evidence-empty">Chưa có bằng chứng thực tế</p>
+          ) : (
+            <ul className="evidence-list">
+              {reportViews.map((report) => {
+                const formattedTimestamp = new Date(report.submitted_at).toLocaleString("vi-VN");
+                return (
+                  <li key={report.id}>
+                    <article className="evidence-ticket">
+                      <div className="evidence-ticket-head">
+                        <p className="evidence-timestamp">{formattedTimestamp}</p>
+                        <p className="evidence-result" data-result={report.result}>
+                          {RESULT_LABELS[report.result]}
+                        </p>
+                      </div>
+                      {report.note && <p className="evidence-note">{report.note}</p>}
+                      {report.images.length > 0 && (
+                        <div className="evidence-images">
+                          {report.images.map(
+                            (image) =>
+                              image.signedUrl && (
+                                <img
+                                  key={image.id}
+                                  src={image.signedUrl}
+                                  alt={`Ảnh bằng chứng ${image.position}`}
+                                  className="evidence-image"
+                                />
+                              ),
+                          )}
+                        </div>
                       )}
-                    </div>
-                  )}
-                  <DeleteAttemptReportButton
-                    reportId={report.id}
-                    howToId={id}
-                    reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-
-      <div className="attempt-cta-container">
-        <SubmitAttemptReportForm howToId={id} />
-      </div>
-
-      <div className="detail-actions">
-        <DeleteHowToButton howToId={id} attemptReportCount={reportViews.length} />
+                      <div className="evidence-ticket-foot">
+                        <DeleteAttemptReportButton
+                          reportId={report.id}
+                          howToId={id}
+                          reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
+                        />
+                      </div>
+                    </article>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </aside>
       </div>
     </main>
   );
