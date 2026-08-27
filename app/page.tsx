@@ -13,7 +13,9 @@ type HowToCardData = {
   id: string;
   title: string;
   description: string | null;
+  dishId: string | null;
   dishName: string | null;
+  matchedIngredients: string[];
   attempts: number;
   results: AttemptReportResult[];
   evidence: number;
@@ -24,20 +26,34 @@ type DiscoverPageProps = {
   searchParams: Promise<{ q?: string }>;
 };
 
+type SearchMatch = {
+  score: number;
+  /** Tên nguyên liệu thật đã khớp — để giải thích TẠI SAO kết quả này xuất
+   * hiện khi việc khớp không hiển nhiên từ tiêu đề (mục 13 của mission). */
+  matchedIngredients: string[];
+};
+
 /**
  * Search V1 (docs/product/product-evolution-v1.md) — khớp tất định trên
  * title/description/dish/ingredient, xếp hạng bằng điểm cộng dồn đơn giản
- * theo trường khớp. Không dùng full-text search/semantic — cố ý, xem §4 tài
- * liệu quyết định: bắt đầu từ retrieval tất định, mở rộng sau khi cần thật.
+ * theo trường khớp, có thưởng thêm cho khớp chính xác toàn bộ tiêu đề (để
+ * tìm đúng tên luôn đứng đầu). Không dùng full-text search/semantic — cố ý,
+ * xem §4 tài liệu quyết định: bắt đầu từ retrieval tất định, mở rộng sau.
  */
 async function searchHowToIds(
   supabase: ReturnType<typeof getServerSupabaseClient>,
   query: string,
-): Promise<Map<string, number>> {
+): Promise<Map<string, SearchMatch>> {
   const like = `%${query}%`;
-  const scoreByHowToId = new Map<string, number>();
-  const addScore = (howToId: string, points: number) => {
-    scoreByHowToId.set(howToId, (scoreByHowToId.get(howToId) ?? 0) + points);
+  const lowerQuery = query.toLowerCase();
+  const matchByHowToId = new Map<string, SearchMatch>();
+  const getEntry = (howToId: string) => {
+    let entry = matchByHowToId.get(howToId);
+    if (!entry) {
+      entry = { score: 0, matchedIngredients: [] };
+      matchByHowToId.set(howToId, entry);
+    }
+    return entry;
   };
 
   const [titleMatches, dishMatches, ingredientMatches] = await Promise.all([
@@ -47,20 +63,24 @@ async function searchHowToIds(
   ]);
 
   for (const row of titleMatches.data ?? []) {
-    addScore(row.id, row.title.toLowerCase().includes(query.toLowerCase()) ? 3 : 1);
+    const titleLower = row.title.toLowerCase();
+    const points = titleLower === lowerQuery ? 5 : titleLower.includes(lowerQuery) ? 3 : 1;
+    getEntry(row.id).score += points;
   }
 
   const dishIds = (dishMatches.data ?? []).map((d) => d.id);
   if (dishIds.length > 0) {
     const { data: howTosByDish } = await supabase.from("how_to").select("id").in("dish_id", dishIds);
-    for (const row of howTosByDish ?? []) addScore(row.id, 3);
+    for (const row of howTosByDish ?? []) getEntry(row.id).score += 3;
   }
 
   for (const row of ingredientMatches.data ?? []) {
-    addScore(row.how_to_id, 2);
+    const entry = getEntry(row.how_to_id);
+    entry.score += 2;
+    if (!entry.matchedIngredients.includes(row.name)) entry.matchedIngredients.push(row.name);
   }
 
-  return scoreByHowToId;
+  return matchByHowToId;
 }
 
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
@@ -68,18 +88,18 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   const query = (q ?? "").trim();
   const supabase = getServerSupabaseClient();
 
-  let matchScoreByHowToId: Map<string, number> | null = null;
+  let searchMatches: Map<string, SearchMatch> | null = null;
   if (query.length > 0) {
-    matchScoreByHowToId = await searchHowToIds(supabase, query);
+    searchMatches = await searchHowToIds(supabase, query);
   }
 
   let howToQuery = supabase
     .from("how_to")
-    .select("id, title, description, dish:dish_id(name)")
+    .select("id, title, description, dish:dish_id(id, name)")
     .order("created_at", { ascending: false });
 
-  if (matchScoreByHowToId) {
-    const matchedIds = [...matchScoreByHowToId.keys()];
+  if (searchMatches) {
+    const matchedIds = [...searchMatches.keys()];
     howToQuery = howToQuery.in("id", matchedIds.length > 0 ? matchedIds : ["00000000-0000-0000-0000-000000000000"]);
   }
 
@@ -95,9 +115,9 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
     );
   }
 
-  const howTos = matchScoreByHowToId
+  const howTos = searchMatches
     ? [...howTosRaw].sort(
-        (a, b) => (matchScoreByHowToId!.get(b.id) ?? 0) - (matchScoreByHowToId!.get(a.id) ?? 0),
+        (a, b) => (searchMatches!.get(b.id)?.score ?? 0) - (searchMatches!.get(a.id)?.score ?? 0),
       )
     : howTosRaw;
 
@@ -163,13 +183,15 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   const cards: HowToCardData[] = howTos.map((h) => {
     const results = resultsByHowTo.get(h.id) ?? [];
     const specimenPath = specimenPathByHowTo.get(h.id);
-    const dishRaw = (h as { dish?: { name: string } | { name: string }[] | null }).dish;
+    const dishRaw = (h as { dish?: { id: string; name: string } | { id: string; name: string }[] | null }).dish;
     const dish = Array.isArray(dishRaw) ? (dishRaw[0] ?? null) : (dishRaw ?? null);
     return {
       id: h.id,
       title: h.title,
       description: h.description,
+      dishId: dish?.id ?? null,
       dishName: dish?.name ?? null,
+      matchedIngredients: searchMatches?.get(h.id)?.matchedIngredients ?? [],
       attempts: results.length,
       results,
       evidence: evidenceCountByHowTo.get(h.id) ?? 0,
@@ -263,11 +285,23 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
                 </div>
 
                 <div className="howto-entry-main">
-                  {card.dishName && <p className="dish-label">{card.dishName}</p>}
+                  {card.dishName && card.dishId && (
+                    <Link href={`/dish/${card.dishId}`} className="dish-label">
+                      {card.dishName}
+                    </Link>
+                  )}
                   <h2>
                     <Link href={`/how-to/${card.id}`}>{card.title}</Link>
                   </h2>
                   {card.description && <p className="supporting-text">{card.description}</p>}
+                  {query &&
+                    card.matchedIngredients.length > 0 &&
+                    !card.title.toLowerCase().includes(query.toLowerCase()) && (
+                      <p className="match-reason">
+                        Khớp vì có {card.matchedIngredients.slice(0, 2).join(", ")}
+                        {card.matchedIngredients.length > 2 ? "…" : ""}
+                      </p>
+                    )}
                 </div>
 
                 <div className="howto-entry-tally">

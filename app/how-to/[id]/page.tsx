@@ -255,7 +255,17 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
       <div className="howto-layout">
         <div className="howto-main">
-          <span className="eyebrow">Cách làm{dish ? ` · ${dish.name}` : ""}</span>
+          <span className="eyebrow">
+            Cách làm
+            {dish && (
+              <>
+                {" · "}
+                <Link href={`/dish/${dish.id}`} className="eyebrow-link">
+                  {dish.name}
+                </Link>
+              </>
+            )}
+          </span>
           <h1>{howTo.title}</h1>
           {howTo.description && <p className="supporting-text">{howTo.description}</p>}
 

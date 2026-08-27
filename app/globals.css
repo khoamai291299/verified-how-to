@@ -745,12 +745,38 @@ ul {
 /* Nhãn Dish — nhỏ, lặng, đứng trên tiêu đề How-To để phân biệt "món" khỏi
    "cách làm cụ thể" mà không cần một khối UI riêng. */
 .dish-label {
+  display: inline-block;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-ink-soft);
+  text-decoration: none;
   margin-bottom: 0.2rem;
+}
+
+.dish-label:hover,
+.dish-label:focus-visible {
+  color: var(--color-ink-blue);
+  text-decoration: underline;
+}
+
+/* Giải thích khớp tìm kiếm — chỉ hiện khi việc khớp không hiển nhiên từ tiêu
+   đề (khớp qua nguyên liệu). Chữ thường, không icon/huy hiệu — đây là một sự
+   thật tra cứu được (nguyên liệu này có trong Cách làm), không phải một xác
+   nhận chất lượng. */
+.match-reason {
+  font-size: 0.85rem;
+  color: var(--color-ink-blue);
+}
+
+.eyebrow-link {
+  text-decoration: none;
+}
+
+.eyebrow-link:hover,
+.eyebrow-link:focus-visible {
+  text-decoration: underline;
 }
 
 /* Khám phá — mục lục sổ tay có sức nặng thị giác thật: mỗi mục mang theo một
