@@ -1,8 +1,8 @@
 "use client";
 
-import { useOptimistic, useState, useTransition } from "react";
+import { useActionState, useOptimistic } from "react";
 import Link from "next/link";
-import { toggleSaved } from "./actions";
+import { toggleSaved, type ToggleSavedState } from "./actions";
 
 function BookmarkIcon({ filled }: { filled: boolean }) {
   return (
@@ -13,16 +13,19 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
 }
 
 /**
- * Nút lưu gọn dùng trên thẻ kết quả (Khám phá/Tìm kiếm) — khác với nút
- * "☆ Lưu lại" đầy đủ chữ trên trang chi tiết: chỉ icon, đặt đè lên góc ảnh
- * mẫu vật, không được lấn át chính kết quả.
+ * Nút lưu gọn dùng trên thẻ kết quả (Khám phá/Tìm kiếm/Món/Đã lưu) — khác
+ * với nút "☆ Lưu lại" đầy đủ chữ trên trang chi tiết: chỉ icon, đè lên góc
+ * ảnh mẫu vật, không lấn át chính kết quả.
  *
- * Cập nhật lạc quan (useOptimistic) thay vì chờ action + revalidatePath("/")
- * trả về: trang Khám phá có nhiều truy vấn (ingredient discovery, ảnh mẫu
- * vật...), revalidate toàn trang mất ~1.2–1.5s — quá chậm để cảm thấy như
- * một cú bấm lưu. Nếu action lỗi, `saved` (giá trị đã xác nhận) không đổi
- * nên optimistic value tự rollback về đúng trạng thái cũ khi transition kết
- * thúc — không cần rollback thủ công.
+ * QUAN TRỌNG: vẫn dùng <form action={formAction}> (useActionState) làm cơ
+ * chế submit thật, KHÔNG gọi server action trực tiếp trong startTransition
+ * thủ công — đã thử cách đó trước và phát hiện lỗi thật khi test: nếu người
+ * dùng bấm lưu rồi điều hướng đi ngay (vd click sang trang khác) trong lúc
+ * request còn đang chạy, request bị hủy giữa chừng và lượt lưu KHÔNG được
+ * ghi vào DB dù UI đã lạc quan hiển thị "đã lưu". <form action> qua
+ * useActionState được React/Next.js coi là một transition thật, sống sót
+ * qua điều hướng — khác với một async function gọi tay trong startTransition.
+ * useOptimistic phủ lên state của useActionState để vẫn có cảm giác tức thì.
  */
 export function SaveIconButton({
   howToId,
@@ -33,47 +36,34 @@ export function SaveIconButton({
   initiallySaved: boolean;
   title: string;
 }) {
-  const [saved, setSaved] = useState(initiallySaved);
-  const [optimisticSaved, setOptimisticSaved] = useOptimistic(saved);
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
-  function handleClick() {
-    setError(null);
-    const next = !saved;
-    startTransition(async () => {
-      setOptimisticSaved(next);
-      const result = await toggleSaved(howToId, { saved }, new FormData());
-      if (result.error) {
-        setError(result.error);
-        return;
-      }
-      setSaved(result.saved);
-    });
-  }
+  const action = toggleSaved.bind(null, howToId);
+  const initialState: ToggleSavedState = { saved: initiallySaved };
+  const [state, formAction] = useActionState(action, initialState);
+  const [optimisticSaved, setOptimisticSaved] = useOptimistic(state.saved);
 
   return (
-    <>
+    <form
+      action={async (formData) => {
+        setOptimisticSaved(!state.saved);
+        await formAction(formData);
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
       <button
-        type="button"
+        type="submit"
         className="save-icon-button"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleClick();
-        }}
-        disabled={isPending}
         aria-pressed={optimisticSaved}
         aria-label={optimisticSaved ? `Bỏ lưu "${title}"` : `Lưu "${title}"`}
         title={optimisticSaved ? "Bỏ lưu" : "Lưu lại"}
       >
         <BookmarkIcon filled={optimisticSaved} />
       </button>
-      {error && (
+      {state.error && (
         <span className="sr-only" role="alert">
-          {error}
+          {state.error}
         </span>
       )}
-    </>
+    </form>
   );
 }
 

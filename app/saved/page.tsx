@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/session";
 import type { AttemptReportResult } from "@/lib/supabase/types";
+import { SaveIconButton } from "@/app/saved/save-icon-button";
 
 export const dynamic = "force-dynamic";
 
@@ -139,12 +140,13 @@ export default async function SavedPage() {
           {rows.map((row) => (
             <li key={row.id}>
               <div className="howto-entry">
-                <div className="specimen" aria-hidden="true">
+                <div className="specimen">
                   {row.specimenUrl ? (
                     <img src={row.specimenUrl} alt="" className="specimen-image" />
                   ) : (
-                    <span className="specimen-empty" />
+                    <span className="specimen-empty" aria-hidden="true" />
                   )}
+                  <SaveIconButton howToId={row.howTo.id} initiallySaved title={row.howTo.title} />
                 </div>
                 <div className="howto-entry-main">
                   {row.dishName && <span className="dish-label">{row.dishName}</span>}

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/session";
 import type { AttemptReportResult } from "@/lib/supabase/types";
+import { SaveIconButton, SaveIconSignInLink } from "@/app/saved/save-icon-button";
 
 // Số lần thử thay đổi liên tục — không prerender tĩnh lúc build.
 export const dynamic = "force-dynamic";
@@ -23,6 +25,7 @@ type HowToCardData = {
   results: AttemptReportResult[];
   evidence: number;
   specimenUrl: string | null;
+  isSaved: boolean;
 };
 
 export async function generateMetadata({ params }: DishPageProps): Promise<Metadata> {
@@ -35,6 +38,7 @@ export async function generateMetadata({ params }: DishPageProps): Promise<Metad
 export default async function DishPage({ params }: DishPageProps) {
   const { id } = await params;
   const supabase = getServerSupabaseClient();
+  const currentUser = await getCurrentUser();
 
   const { data: dish, error: dishError } = await supabase.from("dish").select("id, name").eq("id", id).maybeSingle();
 
@@ -112,6 +116,19 @@ export default async function DishPage({ params }: DishPageProps) {
     }
   }
 
+  // Trạng thái "đã lưu" cho toàn bộ danh sách trong MỘT truy vấn — cùng
+  // cách làm với Khám phá, tránh N+1 và tránh trang Món trông "kém hoàn
+  // thiện hơn" phần còn lại của sản phẩm.
+  const savedHowToIds = new Set<string>();
+  if (currentUser && howToIds.length > 0) {
+    const { data: savedRows } = await supabase
+      .from("saved_how_to")
+      .select("how_to_id")
+      .eq("user_id", currentUser.id)
+      .in("how_to_id", howToIds);
+    for (const row of savedRows ?? []) savedHowToIds.add(row.how_to_id);
+  }
+
   const cards: HowToCardData[] = howTos.map((h) => {
     const results = resultsByHowTo.get(h.id) ?? [];
     const specimenPath = specimenPathByHowTo.get(h.id);
@@ -123,10 +140,12 @@ export default async function DishPage({ params }: DishPageProps) {
       results,
       evidence: evidenceCountByHowTo.get(h.id) ?? 0,
       specimenUrl: specimenPath ? (specimenUrlByPath.get(specimenPath) ?? null) : null,
+      isSaved: savedHowToIds.has(h.id),
     };
   });
 
   const totalAttempts = cards.reduce((sum, c) => sum + c.attempts, 0);
+  const redirectTo = `/dish/${id}`;
 
   return (
     <main className="main-list">
@@ -156,11 +175,16 @@ export default async function DishPage({ params }: DishPageProps) {
           {cards.map((card) => (
             <li key={card.id}>
               <div className="howto-entry">
-                <div className="specimen" aria-hidden="true">
+                <div className="specimen">
                   {card.specimenUrl ? (
                     <img src={card.specimenUrl} alt="" className="specimen-image" />
                   ) : (
-                    <span className="specimen-empty" />
+                    <span className="specimen-empty" aria-hidden="true" />
+                  )}
+                  {currentUser ? (
+                    <SaveIconButton howToId={card.id} initiallySaved={card.isSaved} title={card.title} />
+                  ) : (
+                    <SaveIconSignInLink redirectTo={redirectTo} title={card.title} />
                   )}
                 </div>
 
