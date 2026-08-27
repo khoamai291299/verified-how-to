@@ -5,6 +5,7 @@ import { useId, useRef, type ReactNode } from "react";
 export function ConfirmDeleteDialog({
   triggerLabel,
   triggerAriaLabel,
+  triggerClassName = "subtle",
   title,
   message,
   confirmLabel,
@@ -14,6 +15,7 @@ export function ConfirmDeleteDialog({
 }: {
   triggerLabel: string;
   triggerAriaLabel?: string;
+  triggerClassName?: string;
   title: string;
   message: string;
   confirmLabel: string;
@@ -29,7 +31,7 @@ export function ConfirmDeleteDialog({
     <>
       <button
         type="button"
-        className="danger"
+        className={triggerClassName}
         aria-label={triggerAriaLabel}
         onClick={() => dialogRef.current?.showModal()}
       >

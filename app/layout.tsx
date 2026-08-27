@@ -27,8 +27,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="vi" className={`${bodySans.variable} ${evidenceMono.variable}`}>
       <body>
         <header>
-          <Link href="/">VHKP</Link>
-          <Link href="/how-to/new">+ Tạo cách làm mới</Link>
+          <Link href="/" className="brand">
+            Verified How-To
+          </Link>
+          <nav className="site-nav">
+            <Link href="/">Khám phá</Link>
+            <Link href="/how-to/new" className="button-primary">
+              + Tạo cách làm
+            </Link>
+          </nav>
         </header>
         {children}
       </body>

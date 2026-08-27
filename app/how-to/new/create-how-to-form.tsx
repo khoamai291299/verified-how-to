@@ -20,7 +20,7 @@ function StepListField({ disabled, describedBy }: { disabled: boolean; described
 
   return (
     <div>
-      <label>Các bước</label>
+      <span className="eyebrow">Các bước</span>
       {stepKeys.map((key, index) => (
         <div className="step-row" key={key}>
           <span aria-hidden="true">{index + 1}.</span>
@@ -57,7 +57,7 @@ export function CreateHowToForm() {
   return (
     <form action={formAction}>
       <div>
-        <label htmlFor="title">Tiêu đề</label>
+        <label htmlFor="title">Tên cách làm</label>
         <input
           id="title"
           name="title"
@@ -91,8 +91,8 @@ export function CreateHowToForm() {
 
       {state.error && <p role="alert">{state.error}</p>}
 
-      <button type="submit" disabled={pending}>
-        {pending ? "Đang tạo…" : "Tạo cách làm"}
+      <button type="submit" className="button-primary" disabled={pending}>
+        {pending ? "Đang đăng…" : "Đăng cách làm"}
       </button>
     </form>
   );

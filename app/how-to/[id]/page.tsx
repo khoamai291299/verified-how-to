@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { RESULT_LABELS, type AttemptReportResult } from "@/lib/supabase/types";
@@ -118,12 +119,25 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
     images: imagesByReportId.get(report.id) ?? [],
   }));
 
+  const attemptCount = reportViews.length;
+  const successCount = reportViews.filter((r) => r.result === "success").length;
+  const partialCount = reportViews.filter((r) => r.result === "partial").length;
+  const failedCount = reportViews.filter((r) => r.result === "failed").length;
+  const evidenceCount = reportViews.reduce((sum, r) => sum + r.images.length, 0);
+
   return (
     <main>
-      <h1>{howTo.title}</h1>
-      <DeleteHowToButton howToId={id} attemptReportCount={reportViews.length} />
-      {howTo.description && <p>{howTo.description}</p>}
+      <Link href="/" className="back-link">
+        ← Khám phá
+      </Link>
 
+      <span className="eyebrow">Cách làm</span>
+      <h1>{howTo.title}</h1>
+      {howTo.description && <p className="supporting-text">{howTo.description}</p>}
+
+      <hr className="section-divider" />
+
+      <span className="eyebrow">Các bước</span>
       <ol>
         {(steps ?? []).map((step) => (
           <li key={step.id}>{step.instruction}</li>
@@ -131,14 +145,32 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
       </ol>
 
       {howTo.expected_outcome && (
-        <section>
-          <h2>Kết quả mong đợi</h2>
+        <>
+          <hr className="section-divider" />
+          <span className="eyebrow">Kết quả mong đợi</span>
           <p>{howTo.expected_outcome}</p>
-        </section>
+        </>
       )}
 
+      <hr className="section-divider" />
+
+      <section className="outcome-stats">
+        <span className="eyebrow">Kết quả thực tế</span>
+        {attemptCount === 0 ? (
+          <p className="stat-line">Chưa có lượt thử</p>
+        ) : (
+          <>
+            <p className="stat-line">{attemptCount} lần thử</p>
+            <p className="stat-line">
+              {successCount} thành công · {partialCount} một phần · {failedCount} thất bại
+            </p>
+            {evidenceCount > 0 && <p className="stat-line">{evidenceCount} bằng chứng</p>}
+          </>
+        )}
+      </section>
+
       <section className="evidence-section">
-        <h2>Bằng chứng</h2>
+        <span className="eyebrow">Bằng chứng</span>
         {reportViews.length === 0 ? (
           <p>Chưa có bằng chứng thực tế</p>
         ) : (
@@ -148,15 +180,8 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
               return (
                 <li key={report.id} className="evidence-item">
                   <p className="evidence-timestamp">{formattedTimestamp}</p>
-                  <p className={`evidence-result evidence-result--${report.result}`}>
-                    {RESULT_LABELS[report.result]}
-                  </p>
+                  <p className="evidence-result">{RESULT_LABELS[report.result]}</p>
                   {report.note && <p>{report.note}</p>}
-                  <DeleteAttemptReportButton
-                    reportId={report.id}
-                    howToId={id}
-                    reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
-                  />
                   {report.images.length > 0 && (
                     <div className="evidence-images">
                       {report.images.map(
@@ -172,6 +197,11 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
                       )}
                     </div>
                   )}
+                  <DeleteAttemptReportButton
+                    reportId={report.id}
+                    howToId={id}
+                    reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
+                  />
                 </li>
               );
             })}
@@ -179,7 +209,13 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
         )}
       </section>
 
-      <SubmitAttemptReportForm howToId={id} />
+      <div className="attempt-cta-container">
+        <SubmitAttemptReportForm howToId={id} />
+      </div>
+
+      <div className="detail-actions">
+        <DeleteHowToButton howToId={id} attemptReportCount={reportViews.length} />
+      </div>
     </main>
   );
 }

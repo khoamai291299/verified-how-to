@@ -1,8 +1,20 @@
 import Link from "next/link";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { RESULT_LABELS } from "@/lib/supabase/types";
 
 // Danh sách How-To thay đổi liên tục — không thể prerender tĩnh lúc build.
 export const dynamic = "force-dynamic";
+
+type HowToCardData = {
+  id: string;
+  title: string;
+  description: string | null;
+  attempts: number;
+  success: number;
+  partial: number;
+  failed: number;
+  evidence: number;
+};
 
 export default async function DiscoverPage() {
   const supabase = getServerSupabaseClient();
@@ -21,22 +33,82 @@ export default async function DiscoverPage() {
     );
   }
 
+  const howToIds = howTos.map((h) => h.id);
+
+  const { data: reports } = howToIds.length
+    ? await supabase.from("attempt_report").select("id, how_to_id, result").in("how_to_id", howToIds)
+    : { data: [] };
+
+  const reportIds = (reports ?? []).map((r) => r.id);
+
+  const { data: images } = reportIds.length
+    ? await supabase.from("attempt_report_image").select("id, attempt_report_id").in("attempt_report_id", reportIds)
+    : { data: [] };
+
+  const reportIdToHowToId = new Map((reports ?? []).map((r) => [r.id, r.how_to_id]));
+  const statsByHowTo = new Map<string, { attempts: number; success: number; partial: number; failed: number; evidence: number }>();
+  for (const r of reports ?? []) {
+    const s = statsByHowTo.get(r.how_to_id) ?? { attempts: 0, success: 0, partial: 0, failed: 0, evidence: 0 };
+    s.attempts += 1;
+    if (r.result === "success") s.success += 1;
+    else if (r.result === "partial") s.partial += 1;
+    else if (r.result === "failed") s.failed += 1;
+    statsByHowTo.set(r.how_to_id, s);
+  }
+  for (const img of images ?? []) {
+    const howToId = reportIdToHowToId.get(img.attempt_report_id);
+    if (howToId) {
+      const s = statsByHowTo.get(howToId);
+      if (s) s.evidence += 1;
+    }
+  }
+
+  const cards: HowToCardData[] = howTos.map((h) => {
+    const s = statsByHowTo.get(h.id) ?? { attempts: 0, success: 0, partial: 0, failed: 0, evidence: 0 };
+    return { id: h.id, title: h.title, description: h.description, ...s };
+  });
+
   return (
     <main>
-      <h1>Khám phá</h1>
-      {howTos.length === 0 ? (
+      <section className="hero">
+        <h1>Những cách làm đã được người thật thử</h1>
+        <p className="supporting-text">
+          Mỗi cách làm ở đây đi kèm báo cáo thật từ người đã thử — không chỉ là hướng dẫn lý thuyết.
+        </p>
+      </section>
+
+      {cards.length === 0 ? (
         <div>
-          <p>Chưa có Cách làm nào.</p>
-          <Link href="/how-to/new">Tạo Cách làm đầu tiên</Link>
+          <p>Chưa có cách làm nào.</p>
+          <p className="supporting-text">Hãy chia sẻ cách làm đầu tiên.</p>
+          <Link href="/how-to/new" className="button-primary">
+            Tạo cách làm
+          </Link>
         </div>
       ) : (
-        <ul>
-          {howTos.map((howTo) => (
-            <li key={howTo.id}>
-              <Link href={`/how-to/${howTo.id}`}>
-                <h2>{howTo.title}</h2>
-                {howTo.description && <p>{howTo.description}</p>}
-              </Link>
+        <ul className="howto-list">
+          {cards.map((card) => (
+            <li key={card.id} className="howto-card">
+              <h2>
+                <Link href={`/how-to/${card.id}`}>{card.title}</Link>
+              </h2>
+              {card.description && <p className="supporting-text">{card.description}</p>}
+
+              {card.attempts === 0 ? (
+                <p className="stat-line">Chưa có lượt thử</p>
+              ) : (
+                <>
+                  <p className="stat-line">{card.attempts} người đã thử</p>
+                  <p className="stat-line">
+                    {card.success} thành công · {card.partial} một phần · {card.failed} {RESULT_LABELS.failed.toLowerCase()}
+                  </p>
+                </>
+              )}
+              {card.evidence > 0 && <p className="stat-line">{card.evidence} bằng chứng</p>}
+
+              <div className="card-footer">
+                <Link href={`/how-to/${card.id}`}>Xem cách làm →</Link>
+              </div>
             </li>
           ))}
         </ul>
