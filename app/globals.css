@@ -7,6 +7,11 @@
   --color-brick: #a8412f;
   --color-moss: #5b7a5a;
   --color-amber: #b4863a;
+  /* Bản đậm hơn của moss/amber — dùng riêng cho chữ và vạch nhỏ cần tương phản
+     WCAG AA (≥4.5:1). Bản gốc chỉ đạt 4.2:1 / 2.9:1 trên nền giấy — đủ cho viền
+     trang trí dày trước đây nhưng không đủ khi màu áp trực tiếp lên chữ. */
+  --color-moss-text: #46614a;
+  --color-amber-text: #8a6428;
   --color-kraft: #c9a97b;
   --color-kraft-rail: #d9c39c;
   --color-kraft-border: #b08e5f;
@@ -62,6 +67,18 @@ a {
 :focus-visible {
   outline: 2px solid var(--color-ink-blue);
   outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 header {
@@ -231,7 +248,7 @@ button {
     transform 0.06s ease;
 }
 
-button:not(.secondary):not(.subtle):not(.danger):hover:not([disabled]) {
+button:not(.secondary):not(.subtle):not(.danger):not(.contribute-invite):hover:not([disabled]) {
   background: color-mix(in srgb, var(--color-ink-blue) 88%, black);
 }
 
@@ -405,19 +422,37 @@ ul {
   background: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 
-/* Trang chi tiết Cách làm — hai vùng: nội dung (giấy) + Bằng chứng (kraft), theo
-   design-direction.md §5–§6. Vùng Bằng chứng là một "bề mặt" riêng, sticky trên
-   desktop, để hai lớp thông tin luôn phân biệt được bằng mắt. */
+/* Trang chi tiết Cách làm — một cuốn sổ tay mở ra hai trang: trang giấy (phương
+   pháp) và trang kraft (những gì đã thực sự xảy ra), theo design-direction.md
+   §5–§6. Dải gáy lò xo phía trên và đường khâu giữa hai trang khâu chúng lại
+   thành MỘT vật thể — không phải nội dung + sidebar màu đặt cạnh nhau. */
 .howto-layout {
   display: block;
+}
+
+.notebook-spine {
+  display: none;
 }
 
 @media (min-width: 880px) {
   .howto-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--rail-width);
-    gap: var(--space-xl);
+    gap: var(--space-lg);
     align-items: start;
+  }
+
+  .notebook-spine {
+    display: block;
+    grid-column: 1 / -1;
+    height: 14px;
+    margin-bottom: var(--space-md);
+    border-radius: 7px;
+    background-color: color-mix(in srgb, var(--color-kraft-border) 55%, var(--color-border));
+    background-image: radial-gradient(circle 3.5px, var(--color-paper) 3.5px, transparent 3.7px);
+    background-size: 26px 14px;
+    background-position: 13px 0;
+    background-repeat: repeat-x;
   }
 }
 
@@ -428,8 +463,6 @@ ul {
 .evidence-rail {
   margin-top: var(--space-xl);
   background: var(--color-kraft-rail);
-  border: 1px solid var(--color-kraft-border);
-  border-radius: var(--radius);
   padding: var(--space-md);
 }
 
@@ -438,6 +471,8 @@ ul {
     margin-top: 0;
     position: sticky;
     top: var(--space-lg);
+    border-left: 1px dashed var(--color-kraft-border);
+    padding-left: var(--space-lg);
   }
 }
 
@@ -499,67 +534,130 @@ ul {
   }
 }
 
-.evidence-ticket-head {
+/* Phiếu = "field note": cột lề bên trái ghi mốc thời gian + kết quả như một
+   con dấu ngày trong sổ tay thực địa; nội dung chảy bên phải; ảnh (nếu có)
+   kẹp lệch như một tấm ảnh cài vào trang, không nằm thành hàng rời rạc. */
+.field-note {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
   gap: var(--space-sm);
-  flex-wrap: wrap;
-  margin-bottom: 0.35rem;
+}
+
+.field-note-margin {
+  flex: 0 0 4.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-right: var(--space-xs);
+  border-right: 1px solid var(--color-border);
+}
+
+.field-note-body {
+  flex: 1;
+  min-width: 0;
+  padding-right: 2.25rem;
 }
 
 .evidence-timestamp {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
+  line-height: 1.3;
   color: var(--color-ink-soft);
 }
 
 .evidence-result {
   font-weight: 700;
-  padding-left: 0.6rem;
-  border-left: 3px solid var(--color-border);
+  font-size: 0.85rem;
+  line-height: 1.3;
 }
 
 .evidence-result[data-result="success"] {
-  border-left-color: var(--color-moss);
+  color: var(--color-moss-text);
 }
 
 .evidence-result[data-result="partial"] {
-  border-left-color: var(--color-amber);
+  color: var(--color-amber-text);
 }
 
 .evidence-result[data-result="failed"] {
-  border-left-color: var(--color-brick);
+  color: var(--color-brick);
 }
 
 .evidence-note {
-  margin-top: 0.35rem;
+  overflow: hidden;
 }
 
 .evidence-images {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.6rem;
+  gap: 0.4rem;
 }
 
 .evidence-image {
-  width: 84px;
-  height: 84px;
+  float: right;
+  width: 72px;
+  height: 72px;
   object-fit: cover;
-  border-radius: 3px;
-  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  border: 3px solid #fff;
+  outline: 1px solid var(--color-border);
+  margin: 0.1rem 0 0.4rem 0.6rem;
+  transform: rotate(2deg);
+  box-shadow: 0 1px 3px rgba(38, 37, 31, 0.18);
 }
 
-.evidence-ticket-foot {
-  margin-top: 0.5rem;
-  display: flex;
-  justify-content: flex-end;
+.evidence-images:nth-of-type(even) .evidence-image {
+  transform: rotate(-1.5deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evidence-image {
+    transform: none;
+  }
 }
 
 .evidence-empty {
   color: var(--color-ink-soft);
   font-style: normal;
+}
+
+/* Xóa ghi chú thực địa là hành động phụ, đứng lặng ở góc — không phải một hàng
+   thao tác kiểu bản ghi CRUD. Chỉ nổi rõ khi hover/focus. */
+.field-note-delete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 0 3px 0 12px;
+  background: transparent;
+  color: var(--color-ink-soft);
+  font-size: 1.1rem;
+  line-height: 1;
+  opacity: 0.55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+}
+
+.field-note-delete:hover:not([disabled]) {
+  opacity: 1;
+  background: color-mix(in srgb, var(--color-brick) 10%, transparent);
+  color: var(--color-brick);
+}
+
+.field-note-delete:focus-visible {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-note-delete {
+    transition: none;
+  }
 }
 
 /* Với 5+ báo cáo, phần còn lại thu gọn lại — tránh rail biến thành một bức
@@ -602,11 +700,19 @@ ul {
   margin-top: var(--space-md);
 }
 
-/* Khám phá — danh sách kiểu "mục lục sổ tay" (design-direction.md §5): không phải
-   lưới thẻ kiểu SaaS, không phải lưới ảnh Pinterest. Các mục phân cách bằng
-   đường kẻ, tiêu đề lớn đọc như một mục lục, chỉ báo số lần thử ở cột riêng bằng mono. */
+/* Khám phá — mục lục sổ tay có sức nặng thị giác thật: mỗi mục mang theo một
+   "mẫu vật" (ảnh bằng chứng gần nhất, nếu có) và một dải gạch kiểm — mỗi vạch
+   là MỘT lần thử thật, không phải điểm tổng hợp. Không dùng lưới thẻ SaaS. */
 .hero {
   margin-bottom: var(--space-xl);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+.hero-text {
   max-width: 34rem;
 }
 
@@ -615,12 +721,45 @@ ul {
   line-height: 1.15;
 }
 
-/* Con số duy nhất — bằng chứng thật, không phải khẩu hiệu — đứng ngay dưới
-   tiêu đề, dùng mono như mọi dữ liệu Bằng chứng khác trong sản phẩm. */
+.hero-evidence {
+  flex: 0 0 auto;
+  max-width: 12rem;
+}
+
+/* "Chòm sao bằng chứng" — mỗi chấm là một Attempt Report có thật đã ghi nhận
+   trên toàn sản phẩm. Không phải trang trí: xóa một lần thử sẽ xóa một chấm. */
+.hero-evidence-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.evidence-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.evidence-dot[data-result="success"] {
+  background: var(--color-moss-text);
+}
+
+.evidence-dot[data-result="partial"] {
+  background: var(--color-amber-text);
+}
+
+.evidence-dot[data-result="failed"] {
+  background: var(--color-brick);
+}
+
 .hero-stat {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--color-ink-blue);
+  text-align: right;
 }
 
 .howto-list {
@@ -632,17 +771,42 @@ ul {
   padding: var(--space-md) 0;
   border-top: 1px solid var(--color-border);
   display: flex;
+  align-items: flex-start;
   flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-sm) var(--space-lg);
+  gap: var(--space-sm) var(--space-md);
 }
 
 .howto-list li:last-child .howto-entry {
   border-bottom: 1px solid var(--color-border);
 }
 
+/* Mẫu vật — ảnh bằng chứng gần nhất đại diện cho Cách làm, hoặc một ký hiệu
+   gạch chéo trung tính nếu chưa có lượt thử nào (không phải ô trống vô nghĩa). */
+.specimen {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-paper-raised);
+}
+
+.specimen-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.specimen-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: repeating-linear-gradient(135deg, var(--color-border) 0 1px, transparent 1px 7px);
+}
+
 .howto-entry-main {
-  flex: 1 1 20rem;
+  flex: 1 1 16rem;
   min-width: 0;
 }
 
@@ -681,14 +845,70 @@ ul {
   margin-bottom: 0;
 }
 
-.howto-entry-stats {
-  flex: 0 0 auto;
+.howto-entry-tally {
+  flex: 1 1 9rem;
+  min-width: 8rem;
 }
 
-@media (min-width: 480px) {
-  .howto-entry-stats {
+@media (min-width: 560px) {
+  .howto-entry-tally {
+    flex: 0 0 auto;
     text-align: right;
   }
+}
+
+.tally-empty {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+}
+
+.tally-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-bottom: 0.3rem;
+}
+
+@media (min-width: 560px) {
+  .tally-marks {
+    justify-content: flex-end;
+  }
+}
+
+/* Mỗi vạch = một Attempt Report thật, theo đúng tinh thần "gạch kiểm" trong sổ
+   tay thực địa — không phải thanh tiến trình hay điểm số. */
+.tally-mark {
+  width: 4px;
+  height: 16px;
+  border-radius: 1px;
+  background: var(--color-border);
+  transform: rotate(-8deg);
+}
+
+.tally-mark[data-result="success"] {
+  background: var(--color-moss-text);
+}
+
+.tally-mark[data-result="partial"] {
+  background: var(--color-amber-text);
+}
+
+.tally-mark[data-result="failed"] {
+  background: var(--color-brick);
+}
+
+.tally-overflow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--color-ink-soft);
+  align-self: center;
+}
+
+.tally-caption {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
 }
 
 .stat-line {
@@ -725,9 +945,27 @@ ul {
 
 /* Attempt CTA — sống trong evidence-rail, ngay cạnh Bằng chứng mà nó sẽ đóng góp vào. */
 
-.attempt-cta-container .button-primary {
-  width: 100%;
+/* Lời mời góp bằng chứng — một chỗ trống đang chờ được điền vào, không phải
+   một nút "Submit" kiểu SaaS. */
+.contribute-invite {
+  display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border: 1.5px dashed var(--color-ink-blue);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-ink-blue);
+  font-weight: 600;
+  text-align: center;
+}
+
+.contribute-invite:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--color-ink-blue) 8%, transparent);
+  border-style: solid;
 }
 
 .attempt-cta-container h2 {

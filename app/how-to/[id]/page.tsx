@@ -35,39 +35,49 @@ type AttemptReportView = {
 };
 
 function EvidenceTicketItem({ report, howToId }: { report: AttemptReportView; howToId: string }) {
-  const formattedTimestamp = new Date(report.submitted_at).toLocaleString("vi-VN");
+  const submittedDate = new Date(report.submitted_at);
+  const formattedTimestamp = submittedDate.toLocaleString("vi-VN");
+  const formattedTime = submittedDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+  const formattedDate = submittedDate.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
+
   return (
     <li>
       <article className="evidence-ticket">
-        <div className="evidence-ticket-head">
-          <p className="evidence-timestamp">{formattedTimestamp}</p>
-          <p className="evidence-result" data-result={report.result}>
-            {RESULT_LABELS[report.result]}
-          </p>
-        </div>
-        {report.note && <p className="evidence-note">{report.note}</p>}
-        {report.images.length > 0 && (
-          <div className="evidence-images">
-            {report.images.map(
-              (image) =>
-                image.signedUrl && (
-                  <img
-                    key={image.id}
-                    src={image.signedUrl}
-                    alt={`Ảnh bằng chứng ${image.position}`}
-                    className="evidence-image"
-                  />
-                ),
-            )}
+        <div className="field-note">
+          <div className="field-note-margin">
+            <p className="evidence-timestamp">
+              {formattedTime}
+              <br />
+              {formattedDate}
+            </p>
+            <p className="evidence-result" data-result={report.result}>
+              {RESULT_LABELS[report.result]}
+            </p>
           </div>
-        )}
-        <div className="evidence-ticket-foot">
-          <DeleteAttemptReportButton
-            reportId={report.id}
-            howToId={howToId}
-            reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
-          />
+          <div className="field-note-body">
+            {report.images.length > 0 && (
+              <div className="evidence-images">
+                {report.images.map(
+                  (image) =>
+                    image.signedUrl && (
+                      <img
+                        key={image.id}
+                        src={image.signedUrl}
+                        alt={`Ảnh bằng chứng ${image.position}`}
+                        className="evidence-image"
+                      />
+                    ),
+                )}
+              </div>
+            )}
+            {report.note && <p className="evidence-note">{report.note}</p>}
+          </div>
         </div>
+        <DeleteAttemptReportButton
+          reportId={report.id}
+          howToId={howToId}
+          reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
+        />
       </article>
     </li>
   );
@@ -190,6 +200,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
       </Link>
 
       <div className="howto-layout">
+        <div className="notebook-spine" aria-hidden="true" />
         <div className="howto-main">
           <span className="eyebrow">Cách làm</span>
           <h1>{howTo.title}</h1>

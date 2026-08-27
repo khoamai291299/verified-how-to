@@ -21,8 +21,14 @@ export function SubmitAttemptReportForm({ howToId }: { howToId: string }) {
 
   if (!expanded) {
     return (
-      <button type="button" className="button-primary" aria-expanded={false} aria-controls={formRegionId} onClick={() => setExpanded(true)}>
-        Tôi đã thử cách này
+      <button
+        type="button"
+        className="contribute-invite"
+        aria-expanded={false}
+        aria-controls={formRegionId}
+        onClick={() => setExpanded(true)}
+      >
+        + Bạn đã thử chưa? Ghi lại kết quả
       </button>
     );
   }
