@@ -8,7 +8,7 @@ import "./globals.css";
 const bodySans = Be_Vietnam_Pro({
   variable: "--font-sans",
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "600"],
+  weight: ["400", "600", "700"],
 });
 
 const evidenceMono = IBM_Plex_Mono({
@@ -38,6 +38,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </nav>
         </header>
         {children}
+        <footer className="site-footer">
+          <p>Verified How-To — bằng chứng thật từ người đã thử, không phải xác nhận của hệ thống.</p>
+        </footer>
       </body>
     </html>
   );

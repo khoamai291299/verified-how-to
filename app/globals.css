@@ -102,6 +102,23 @@ header {
   color: #fff;
   font-weight: 600;
   text-decoration: none;
+  transition:
+    background-color 0.12s ease,
+    transform 0.06s ease;
+}
+
+.button-primary:hover {
+  background: color-mix(in srgb, var(--color-ink-blue) 88%, black);
+}
+
+.button-primary:active {
+  transform: translateY(1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button-primary {
+    transition: none;
+  }
 }
 
 main {
@@ -126,14 +143,25 @@ p {
 }
 
 h1 {
-  font-size: 1.6rem;
-  line-height: 1.25;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
   margin-bottom: var(--space-sm);
 }
 
 h2 {
-  font-size: 1.15rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
   margin-bottom: var(--space-sm);
+}
+
+.howto-main p,
+.attempt-cta-container p,
+.hero p {
+  max-width: 42rem;
 }
 
 .eyebrow {
@@ -188,6 +216,7 @@ textarea {
 
 button {
   font: inherit;
+  font-weight: 600;
   padding: 0.6rem 1rem;
   min-height: 44px;
   min-width: 44px;
@@ -196,6 +225,18 @@ button {
   background: var(--color-ink-blue);
   color: #fff;
   cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.06s ease;
+}
+
+button:not(.secondary):not(.subtle):not(.danger):hover:not([disabled]) {
+  background: color-mix(in srgb, var(--color-ink-blue) 88%, black);
+}
+
+button:active:not([disabled]) {
+  transform: translateY(1px);
 }
 
 button[disabled] {
@@ -208,9 +249,23 @@ button.secondary {
   color: var(--color-ink-blue);
 }
 
+button.secondary:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--color-ink-blue) 8%, transparent);
+}
+
 button.danger {
   background: var(--color-brick);
   border-color: var(--color-brick);
+}
+
+button.danger:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--color-brick) 88%, black);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
 }
 
 /* Xóa không phải hành động chính của sản phẩm — nút mở hộp thoại giữ mức độ
@@ -266,13 +321,54 @@ ul {
   padding-left: 0;
 }
 
-/* Các bước — nhịp đọc dọc rõ ràng, quan trọng khi một Cách làm có 8-10 bước. */
+/* Các bước — thứ tự thực sự mang thông tin (phải làm trước-sau), nên đánh số
+   lớn, rõ ràng thay vì marker mặc định của trình duyệt. Nhịp đọc dọc rộng rãi,
+   quan trọng khi một Cách làm có 8-10 bước. */
+.howto-main ol {
+  list-style: none;
+  padding-left: 0;
+  counter-reset: step;
+}
+
 .howto-main ol li {
-  padding-left: 0.35rem;
+  counter-increment: step;
+  position: relative;
+  padding-left: 2.75rem;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.howto-main ol li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-ink-soft);
+  background: var(--color-paper-raised);
 }
 
 .howto-main ol li + li {
   margin-top: 0.85rem;
+}
+
+.howto-main ol li + li::after {
+  content: "";
+  position: absolute;
+  left: 0.99rem;
+  top: -0.85rem;
+  width: 1px;
+  height: 0.85rem;
+  background: var(--color-border);
 }
 
 .step-row {
@@ -363,15 +459,34 @@ ul {
 }
 
 /* Phiếu Báo Cáo Thử — chữ ký thị giác của sản phẩm (design-direction.md §8).
-   Viền trên đứt nét gợi ý mép xé; nghiêng nhẹ luân phiên, không lặp lại khi cuộn. */
+   Mép trên đục lỗ (perforation) bằng CSS thuần — gợi ý mép xé khỏi cuộn phiếu,
+   để lộ màu kraft bên dưới qua từng lỗ nhỏ; nghiêng nhẹ luân phiên, không lặp
+   lại khi cuộn. Không dùng texture ảnh raster (design-direction.md §14). */
 .evidence-ticket {
+  position: relative;
   background: var(--color-paper-raised);
   border: 1px solid var(--color-border);
-  border-top: 3px dashed var(--color-kraft-border);
+  border-top: none;
   border-radius: 3px;
-  padding: var(--space-sm) var(--space-md) var(--space-md);
+  padding: calc(var(--space-sm) + 8px) var(--space-md) var(--space-md);
   box-shadow: 0 1px 2px rgba(38, 37, 31, 0.08);
   transform: rotate(-0.6deg);
+}
+
+.evidence-ticket::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1px;
+  right: 1px;
+  height: 10px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  background-color: var(--color-paper-raised);
+  background-image: radial-gradient(circle 2.6px, var(--color-kraft-rail) 2.6px, transparent 2.8px);
+  background-size: 14px 10px;
+  background-position: 7px 3px;
+  background-repeat: repeat-x;
 }
 
 .evidence-list li:nth-child(even) .evidence-ticket {
@@ -496,8 +611,16 @@ ul {
 }
 
 .hero h1 {
-  font-size: 2.1rem;
-  line-height: 1.2;
+  font-size: clamp(2rem, 1.6rem + 2vw, 2.75rem);
+  line-height: 1.15;
+}
+
+/* Con số duy nhất — bằng chứng thật, không phải khẩu hiệu — đứng ngay dưới
+   tiêu đề, dùng mono như mọi dữ liệu Bằng chứng khác trong sản phẩm. */
+.hero-stat {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.9rem;
+  color: var(--color-ink-blue);
 }
 
 .howto-list {
@@ -524,12 +647,12 @@ ul {
 }
 
 .howto-entry h2 {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   margin-bottom: 0.35rem;
 }
 
 .howto-entry h2 a {
-  color: var(--foreground);
+  color: var(--color-ink-blue);
   text-decoration: none;
   background-image: linear-gradient(var(--color-ink-blue), var(--color-ink-blue));
   background-position: 0 100%;
@@ -538,10 +661,20 @@ ul {
   transition: background-size 0.15s ease;
 }
 
+.howto-entry h2 a::after {
+  content: " →";
+  opacity: 0.6;
+}
+
 .howto-entry h2 a:hover,
 .howto-entry h2 a:focus-visible {
-  color: var(--color-ink-blue);
   background-size: 100% 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .howto-entry h2 a {
+    transition: none;
+  }
 }
 
 .howto-entry .supporting-text {
@@ -563,16 +696,6 @@ ul {
   font-size: 0.85rem;
   color: var(--color-ink-soft);
   margin-bottom: 0.2rem;
-}
-
-.card-footer {
-  margin-top: var(--space-sm);
-}
-
-.card-footer a {
-  font-weight: 600;
-  font-size: 0.9rem;
-  white-space: nowrap;
 }
 
 /* How-To detail */
@@ -631,6 +754,20 @@ ul {
 .evidence-upload-group label {
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+.site-footer {
+  margin-top: var(--space-xl);
+  padding: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  text-align: center;
+}
+
+.site-footer p {
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
+  max-width: 32rem;
+  margin: 0 auto;
 }
 
 /* Loading skeleton */

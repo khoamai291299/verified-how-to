@@ -68,6 +68,9 @@ export default async function DiscoverPage() {
     return { id: h.id, title: h.title, description: h.description, ...s };
   });
 
+  const totalAttempts = cards.reduce((sum, c) => sum + c.attempts, 0);
+  const totalEvidence = cards.reduce((sum, c) => sum + c.evidence, 0);
+
   return (
     <main className="main-list">
       <section className="hero">
@@ -75,6 +78,12 @@ export default async function DiscoverPage() {
         <p className="supporting-text">
           Mỗi cách làm ở đây đi kèm báo cáo thật từ người đã thử — không chỉ là hướng dẫn lý thuyết.
         </p>
+        {totalAttempts > 0 && (
+          <p className="hero-stat">
+            {totalAttempts} lần thử thật{totalEvidence > 0 ? ` · ${totalEvidence} bằng chứng` : ""} trên {cards.length}{" "}
+            cách làm
+          </p>
+        )}
       </section>
 
       {cards.length === 0 ? (
@@ -95,9 +104,6 @@ export default async function DiscoverPage() {
                     <Link href={`/how-to/${card.id}`}>{card.title}</Link>
                   </h2>
                   {card.description && <p className="supporting-text">{card.description}</p>}
-                  <div className="card-footer">
-                    <Link href={`/how-to/${card.id}`}>Xem cách làm →</Link>
-                  </div>
                 </div>
 
                 <div className="howto-entry-stats">
