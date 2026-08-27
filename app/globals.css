@@ -1419,6 +1419,7 @@ ul {
 }
 
 .featured-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   text-decoration: none;
@@ -1430,10 +1431,23 @@ ul {
   transition: box-shadow 0.16s ease, transform 0.16s ease;
 }
 
+/* Toàn thẻ vẫn bấm được (stretched link), nút lưu nổi lên trên bằng z-index
+   cao hơn để không bị link nền chặn mất — tránh lồng <button> trong <a>. */
+.featured-card-stretched-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
 .featured-card:hover,
-.featured-card:focus-visible {
+.featured-card:has(.featured-card-stretched-link:focus-visible) {
   box-shadow: 0 10px 24px rgba(23, 20, 15, 0.1);
   transform: translateY(-2px);
+}
+
+.featured-card-stretched-link:focus-visible {
+  outline: 2px solid var(--color-ember);
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1442,7 +1456,7 @@ ul {
   }
 
   .featured-card:hover,
-  .featured-card:focus-visible {
+  .featured-card:has(.featured-card-stretched-link:focus-visible) {
     transform: none;
   }
 }
@@ -1505,6 +1519,7 @@ ul {
 /* Mẫu vật — ảnh bằng chứng gần nhất; đủ lớn để là một điểm neo thị giác thật,
    hoặc ký hiệu gạch chéo trung tính nếu chưa có lượt thử. */
 .specimen {
+  position: relative;
   flex: 0 0 auto;
   width: 108px;
   height: 108px;
@@ -1512,6 +1527,60 @@ ul {
   overflow: hidden;
   border: 1px solid var(--color-line);
   background: var(--color-paper-deep);
+}
+
+/* Nút lưu gọn đè lên góc ảnh mẫu vật — không lấn át kết quả, không kích
+   hoạt điều hướng của link bao quanh (stopPropagation ở component). */
+.save-icon-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--color-ink-soft);
+  box-shadow: 0 1px 4px rgba(23, 20, 15, 0.18);
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.1s ease, color 0.12s ease;
+}
+
+.save-icon-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.save-icon-button[aria-pressed="true"] {
+  color: var(--color-ember);
+}
+
+.save-icon-button:hover:not([disabled]) {
+  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.save-icon-button:active:not([disabled]) {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .save-icon-button {
+    transition: none;
+  }
+
+  .save-icon-button:hover:not([disabled]),
+  .save-icon-button:active:not([disabled]) {
+    transform: none;
+  }
 }
 
 @media (min-width: 640px) {

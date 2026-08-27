@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/session";
 import { getAllCategories } from "@/lib/supabase/categories";
 import { CATEGORY_DIMENSION_LABELS, RESULT_LABELS, type AttemptReportResult, type Category } from "@/lib/supabase/types";
+import { SaveIconButton, SaveIconSignInLink } from "@/app/saved/save-icon-button";
 
 // Danh sách How-To thay đổi liên tục — không thể prerender tĩnh lúc build.
 export const dynamic = "force-dynamic";
@@ -21,6 +23,7 @@ type HowToCardData = {
   results: AttemptReportResult[];
   evidence: number;
   specimenUrl: string | null;
+  isSaved: boolean;
 };
 
 type DiscoverPageProps = {
@@ -84,15 +87,30 @@ async function searchHowToIds(
   return matchByHowToId;
 }
 
-function HowToCardRow({ card, query }: { card: HowToCardData; query: string }) {
+function HowToCardRow({
+  card,
+  query,
+  currentUserId,
+  redirectTo,
+}: {
+  card: HowToCardData;
+  query: string;
+  currentUserId: string | null;
+  redirectTo: string;
+}) {
   return (
     <li>
       <div className="howto-entry">
-        <div className="specimen" aria-hidden="true">
+        <div className="specimen">
           {card.specimenUrl ? (
             <img src={card.specimenUrl} alt="" className="specimen-image" />
           ) : (
-            <span className="specimen-empty" />
+            <span className="specimen-empty" aria-hidden="true" />
+          )}
+          {currentUserId ? (
+            <SaveIconButton howToId={card.id} initiallySaved={card.isSaved} title={card.title} />
+          ) : (
+            <SaveIconSignInLink redirectTo={redirectTo} title={card.title} />
           )}
         </div>
 
@@ -142,10 +160,22 @@ function HowToCardRow({ card, query }: { card: HowToCardData; query: string }) {
 }
 
 /** Thẻ ảnh lớn cho kệ "Nổi bật" — ảnh là điểm neo thị giác chính, khác hẳn
- * dòng danh mục dày đặc của danh sách đầy đủ bên dưới. */
-function FeaturedCard({ card }: { card: HowToCardData }) {
+ * dòng danh mục dày đặc của danh sách đầy đủ bên dưới. Toàn thẻ vẫn bấm được
+ * qua "stretched link" thay vì bọc cả thẻ trong <a> — cần thế để nút lưu
+ * (một <button>/<a> khác) không bị lồng bên trong link, vốn không hợp lệ về
+ * ngữ nghĩa HTML và sẽ kích hoạt điều hướng kép. */
+function FeaturedCard({
+  card,
+  currentUserId,
+  redirectTo,
+}: {
+  card: HowToCardData;
+  currentUserId: string | null;
+  redirectTo: string;
+}) {
   return (
-    <Link href={`/how-to/${card.id}`} className="featured-card">
+    <div className="featured-card">
+      <Link href={`/how-to/${card.id}`} className="featured-card-stretched-link" aria-label={card.title} />
       <div className="featured-card-image" aria-hidden="true">
         {card.specimenUrl ? (
           <img src={card.specimenUrl} alt="" />
@@ -153,6 +183,11 @@ function FeaturedCard({ card }: { card: HowToCardData }) {
           <span className="specimen-empty" />
         )}
       </div>
+      {currentUserId ? (
+        <SaveIconButton howToId={card.id} initiallySaved={card.isSaved} title={card.title} />
+      ) : (
+        <SaveIconSignInLink redirectTo={redirectTo} title={card.title} />
+      )}
       <div className="featured-card-body">
         {card.dishName && <span className="dish-label">{card.dishName}</span>}
         <h3>{card.title}</h3>
@@ -163,7 +198,7 @@ function FeaturedCard({ card }: { card: HowToCardData }) {
             : `${card.attempts} lần thử${card.evidence > 0 ? ` · ${card.evidence} ảnh kết quả` : ""}`}
         </p>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -171,6 +206,14 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   const { q, category: categorySlug } = await searchParams;
   const query = (q ?? "").trim();
   const supabase = getServerSupabaseClient();
+  const currentUser = await getCurrentUser();
+
+  // Đường về đúng trạng thái Khám phá hiện tại sau khi đăng nhập (dùng cho
+  // nút lưu của người chưa đăng nhập) — giữ nguyên tìm kiếm/lọc đang xem.
+  const currentSearchParams = new URLSearchParams();
+  if (q) currentSearchParams.set("q", q);
+  if (categorySlug) currentSearchParams.set("category", categorySlug);
+  const redirectTo = currentSearchParams.size > 0 ? `/?${currentSearchParams.toString()}` : "/";
 
   const categories = await getAllCategories();
   const activeCategory = categorySlug ? (categories.find((c) => c.slug === categorySlug) ?? null) : null;
@@ -283,6 +326,18 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
     }
   }
 
+  // Trạng thái "đã lưu" cho toàn bộ danh sách trong MỘT truy vấn — tránh
+  // N+1 (không truy vấn riêng cho từng thẻ kết quả).
+  const savedHowToIds = new Set<string>();
+  if (currentUser && howToIds.length > 0) {
+    const { data: savedRows } = await supabase
+      .from("saved_how_to")
+      .select("how_to_id")
+      .eq("user_id", currentUser.id)
+      .in("how_to_id", howToIds);
+    for (const row of savedRows ?? []) savedHowToIds.add(row.how_to_id);
+  }
+
   const cards: HowToCardData[] = howTos.map((h) => {
     const results = resultsByHowTo.get(h.id) ?? [];
     const specimenPath = specimenPathByHowTo.get(h.id);
@@ -299,6 +354,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
       results,
       evidence: evidenceCountByHowTo.get(h.id) ?? 0,
       specimenUrl: specimenPath ? (specimenUrlByPath.get(specimenPath) ?? null) : null,
+      isSaved: savedHowToIds.has(h.id),
     };
   });
 
@@ -514,7 +570,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           <span className="eyebrow">Được thử nhiều nhất</span>
           <div className="featured-grid">
             {featured.map((card) => (
-              <FeaturedCard key={card.id} card={card} />
+              <FeaturedCard key={card.id} card={card} currentUserId={currentUser?.id ?? null} redirectTo={redirectTo} />
             ))}
           </div>
         </section>
@@ -591,7 +647,13 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
               {featured.length > 0 && <span className="eyebrow">Cách làm khác</span>}
               <ul className="howto-list">
                 {rest.map((card) => (
-                  <HowToCardRow key={card.id} card={card} query={query} />
+                  <HowToCardRow
+                    key={card.id}
+                    card={card}
+                    query={query}
+                    currentUserId={currentUser?.id ?? null}
+                    redirectTo={redirectTo}
+                  />
                 ))}
               </ul>
             </>

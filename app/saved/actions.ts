@@ -41,6 +41,7 @@ export async function toggleSaved(
     }
     revalidatePath(`/how-to/${howToId}`);
     revalidatePath("/saved");
+    revalidatePath("/");
     return { saved: false };
   }
 
@@ -51,5 +52,6 @@ export async function toggleSaved(
   }
   revalidatePath(`/how-to/${howToId}`);
   revalidatePath("/saved");
+  revalidatePath("/");
   return { saved: true };
 }
