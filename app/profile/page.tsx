@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/session";
 import { RESULT_LABELS, type AttemptReportResult } from "@/lib/supabase/types";
+import { SignOutButton } from "@/app/sign-out/sign-out-button";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ export default async function ProfilePage() {
 
   return (
     <main>
-      <span className="eyebrow">Hồ sơ</span>
+      <span className="eyebrow">Sổ tay của bạn</span>
       <h1>{displayName}</h1>
       <p className="supporting-text">{user.email}</p>
 
@@ -85,6 +86,11 @@ export default async function ProfilePage() {
           ))}
         </ul>
       )}
+
+      <hr className="section-divider" />
+      <div className="profile-actions">
+        <SignOutButton />
+      </div>
     </main>
   );
 }

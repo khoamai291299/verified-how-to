@@ -309,7 +309,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           type="search"
           name="q"
           defaultValue={query}
-          placeholder="Tìm theo tên, mô tả, hoặc nguyên liệu…"
+          placeholder="Tìm theo tên, nguyên liệu…"
         />
         <button type="submit" className="secondary">
           Tìm
