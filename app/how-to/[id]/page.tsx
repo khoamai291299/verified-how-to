@@ -200,7 +200,6 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
       </Link>
 
       <div className="howto-layout">
-        <div className="notebook-spine" aria-hidden="true" />
         <div className="howto-main">
           <span className="eyebrow">Cách làm</span>
           <h1>{howTo.title}</h1>
@@ -216,11 +215,10 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           </ol>
 
           {howTo.expected_outcome && (
-            <>
-              <hr className="section-divider" />
+            <div className="expected-outcome">
               <span className="eyebrow">Kết quả mong đợi</span>
               <p>{howTo.expected_outcome}</p>
-            </>
+            </div>
           )}
 
           <div className="detail-actions">

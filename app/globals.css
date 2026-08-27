@@ -87,8 +87,7 @@ header {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-sm) var(--space-md);
-  padding: var(--space-sm) var(--space-md);
-  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-md);
 }
 
 .brand {
@@ -191,10 +190,12 @@ h2 {
   margin-bottom: var(--space-xs);
 }
 
+/* Phân cách bằng khoảng trắng, không bằng đường kẻ — quá nhiều đường kẻ khiến
+   trang chi tiết trông rối mắt (found trong vòng phản hồi thị giác thứ hai). */
 .section-divider {
   border: none;
-  border-top: 1px solid var(--color-border);
-  margin: var(--space-lg) 0;
+  height: 0;
+  margin: var(--space-lg) 0 0;
 }
 
 .supporting-text {
@@ -375,17 +376,7 @@ ul {
 }
 
 .howto-main ol li + li {
-  margin-top: 0.85rem;
-}
-
-.howto-main ol li + li::after {
-  content: "";
-  position: absolute;
-  left: 0.99rem;
-  top: -0.85rem;
-  width: 1px;
-  height: 0.85rem;
-  background: var(--color-border);
+  margin-top: 1.15rem;
 }
 
 .step-row {
@@ -422,37 +413,23 @@ ul {
   background: color-mix(in srgb, var(--foreground) 8%, transparent);
 }
 
-/* Trang chi tiết Cách làm — một cuốn sổ tay mở ra hai trang: trang giấy (phương
-   pháp) và trang kraft (những gì đã thực sự xảy ra), theo design-direction.md
-   §5–§6. Dải gáy lò xo phía trên và đường khâu giữa hai trang khâu chúng lại
-   thành MỘT vật thể — không phải nội dung + sidebar màu đặt cạnh nhau. */
+/* Trang chi tiết Cách làm — MỘT đối tượng tri thức có hai chiều: phương pháp
+   (giấy) và quan sát thực tế (kraft), không phải nội dung chính + sidebar.
+   Sau vòng phản hồi thứ hai: bỏ toàn bộ thiết bị trang trí (gáy lò xo, đường
+   khâu, phiếu có viền/bóng/nghiêng) — chỉ còn ĐÚNG MỘT tín hiệu cấu trúc thật:
+   tỷ lệ cột bất đối xứng + đổi nền màu liền mạch. Còn lại dựa vào khoảng
+   trắng và chữ để tạo phân cấp (design-direction.md §5–§6 vẫn được tôn trọng:
+   hai lớp phân biệt bằng chất liệu nền + typeface, không cần thêm viền). */
 .howto-layout {
   display: block;
-}
-
-.notebook-spine {
-  display: none;
 }
 
 @media (min-width: 880px) {
   .howto-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--rail-width);
-    gap: var(--space-lg);
+    gap: var(--space-xl);
     align-items: start;
-  }
-
-  .notebook-spine {
-    display: block;
-    grid-column: 1 / -1;
-    height: 14px;
-    margin-bottom: var(--space-md);
-    border-radius: 7px;
-    background-color: color-mix(in srgb, var(--color-kraft-border) 55%, var(--color-border));
-    background-image: radial-gradient(circle 3.5px, var(--color-paper) 3.5px, transparent 3.7px);
-    background-size: 26px 14px;
-    background-position: 13px 0;
-    background-repeat: repeat-x;
   }
 }
 
@@ -460,10 +437,25 @@ ul {
   min-width: 0;
 }
 
+/* "Kết quả mong đợi" là bản lề giữa phương pháp và quan sát thực tế — cho nó
+   trọng lượng bằng cỡ chữ và màu, không phải bằng khung/viền. */
+.expected-outcome {
+  margin-top: var(--space-lg);
+}
+
+.expected-outcome .eyebrow {
+  color: var(--color-ink-blue);
+}
+
+.expected-outcome p {
+  font-size: 1.15rem;
+  line-height: 1.4;
+}
+
 .evidence-rail {
   margin-top: var(--space-xl);
   background: var(--color-kraft-rail);
-  padding: var(--space-md);
+  padding: var(--space-lg) var(--space-md);
 }
 
 @media (min-width: 880px) {
@@ -471,8 +463,7 @@ ul {
     margin-top: 0;
     position: sticky;
     top: var(--space-lg);
-    border-left: 1px dashed var(--color-kraft-border);
-    padding-left: var(--space-lg);
+    padding: var(--space-lg);
   }
 }
 
@@ -483,63 +474,35 @@ ul {
 
 .evidence-rail-divider {
   border: none;
-  border-top: 1px dashed var(--color-kraft-border);
-  margin: var(--space-md) 0;
+  height: 0;
+  margin: var(--space-lg) 0 0;
 }
 
 .evidence-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
 }
 
-/* Phiếu Báo Cáo Thử — chữ ký thị giác của sản phẩm (design-direction.md §8).
-   Mép trên đục lỗ (perforation) bằng CSS thuần — gợi ý mép xé khỏi cuộn phiếu,
-   để lộ màu kraft bên dưới qua từng lỗ nhỏ; nghiêng nhẹ luân phiên, không lặp
-   lại khi cuộn. Không dùng texture ảnh raster (design-direction.md §14). */
+/* Mỗi quan sát là một MỤC TRONG NHẬT KÝ, không phải một tấm thẻ — không nền
+   riêng, không viền, không bóng, không nghiêng. Chỉ một đường kẻ mảnh phân
+   cách các mục, giống một sổ ghi chép thực địa thật. */
 .evidence-ticket {
   position: relative;
-  background: var(--color-paper-raised);
-  border: 1px solid var(--color-border);
+  padding: var(--space-md) 0;
+  border-top: 1px solid color-mix(in srgb, var(--color-kraft-border) 55%, transparent);
+}
+
+.evidence-list li:first-child .evidence-ticket {
   border-top: none;
-  border-radius: 3px;
-  padding: calc(var(--space-sm) + 8px) var(--space-md) var(--space-md);
-  box-shadow: 0 1px 2px rgba(38, 37, 31, 0.08);
-  transform: rotate(-0.6deg);
+  padding-top: 0;
 }
 
-.evidence-ticket::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 1px;
-  right: 1px;
-  height: 10px;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
-  background-color: var(--color-paper-raised);
-  background-image: radial-gradient(circle 2.6px, var(--color-kraft-rail) 2.6px, transparent 2.8px);
-  background-size: 14px 10px;
-  background-position: 7px 3px;
-  background-repeat: repeat-x;
-}
-
-.evidence-list li:nth-child(even) .evidence-ticket {
-  transform: rotate(0.5deg);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .evidence-ticket {
-    transform: none;
-  }
-}
-
-/* Phiếu = "field note": cột lề bên trái ghi mốc thời gian + kết quả như một
-   con dấu ngày trong sổ tay thực địa; nội dung chảy bên phải; ảnh (nếu có)
-   kẹp lệch như một tấm ảnh cài vào trang, không nằm thành hàng rời rạc. */
+/* Quan sát = cột lề trái ghi mốc thời gian + kết quả, như một con dấu ngày
+   trong sổ thực địa; nội dung chảy bên phải; ảnh (nếu có) kẹp lệch như một
+   tấm ảnh cài vào trang. */
 .field-note {
   display: flex;
-  gap: var(--space-sm);
+  gap: var(--space-md);
 }
 
 .field-note-margin {
@@ -547,8 +510,6 @@ ul {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  padding-right: var(--space-xs);
-  border-right: 1px solid var(--color-border);
 }
 
 .field-note-body {
@@ -594,15 +555,15 @@ ul {
 
 .evidence-image {
   float: right;
-  width: 72px;
-  height: 72px;
+  width: 108px;
+  height: 108px;
   object-fit: cover;
   border-radius: 2px;
-  border: 3px solid #fff;
+  border: 4px solid #fff;
   outline: 1px solid var(--color-border);
-  margin: 0.1rem 0 0.4rem 0.6rem;
+  margin: 0.1rem 0 0.5rem 0.75rem;
   transform: rotate(2deg);
-  box-shadow: 0 1px 3px rgba(38, 37, 31, 0.18);
+  box-shadow: 0 2px 5px rgba(38, 37, 31, 0.2);
 }
 
 .evidence-images:nth-of-type(even) .evidence-image {
@@ -632,7 +593,7 @@ ul {
   height: 44px;
   padding: 0;
   border: none;
-  border-radius: 0 3px 0 12px;
+  border-radius: 50%;
   background: transparent;
   color: var(--color-ink-soft);
   font-size: 1.1rem;
@@ -704,7 +665,7 @@ ul {
    "mẫu vật" (ảnh bằng chứng gần nhất, nếu có) và một dải gạch kiểm — mỗi vạch
    là MỘT lần thử thật, không phải điểm tổng hợp. Không dùng lưới thẻ SaaS. */
 .hero {
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--space-lg);
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -717,7 +678,7 @@ ul {
 }
 
 .hero h1 {
-  font-size: clamp(2rem, 1.6rem + 2vw, 2.75rem);
+  font-size: clamp(1.85rem, 1.5rem + 1.6vw, 2.4rem);
   line-height: 1.15;
 }
 
@@ -780,12 +741,13 @@ ul {
   border-bottom: 1px solid var(--color-border);
 }
 
-/* Mẫu vật — ảnh bằng chứng gần nhất đại diện cho Cách làm, hoặc một ký hiệu
-   gạch chéo trung tính nếu chưa có lượt thử nào (không phải ô trống vô nghĩa). */
+/* Mẫu vật — ảnh bằng chứng gần nhất đại diện cho Cách làm, đủ lớn để thực sự
+   là một điểm neo thị giác (không phải icon nhỏ xíu), hoặc một ký hiệu gạch
+   chéo trung tính nếu chưa có lượt thử nào (không phải ô trống vô nghĩa). */
 .specimen {
   flex: 0 0 auto;
-  width: 56px;
-  height: 56px;
+  width: 92px;
+  height: 92px;
   border-radius: 3px;
   overflow: hidden;
   border: 1px solid var(--color-border);
@@ -945,27 +907,27 @@ ul {
 
 /* Attempt CTA — sống trong evidence-rail, ngay cạnh Bằng chứng mà nó sẽ đóng góp vào. */
 
-/* Lời mời góp bằng chứng — một chỗ trống đang chờ được điền vào, không phải
-   một nút "Submit" kiểu SaaS. */
+/* Lời mời góp quan sát — đọc như một dòng chữ mời viết tiếp, không phải nút
+   "Submit" kiểu SaaS. Không viền, không hộp — chỉ chữ đậm + gạch chân, tương
+   tự cách một liên kết mời hành động xuất hiện trong văn bản biên tập. */
 .contribute-invite {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
+  gap: 0.4rem;
   min-height: 44px;
-  padding: 0.75rem 1rem;
-  border: 1.5px dashed var(--color-ink-blue);
-  border-radius: 4px;
+  padding: 0.5rem 0;
+  border: none;
   background: transparent;
   color: var(--color-ink-blue);
-  font-weight: 600;
-  text-align: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
 }
 
 .contribute-invite:hover:not([disabled]) {
-  background: color-mix(in srgb, var(--color-ink-blue) 8%, transparent);
-  border-style: solid;
+  color: color-mix(in srgb, var(--color-ink-blue) 82%, black);
 }
 
 .attempt-cta-container h2 {
