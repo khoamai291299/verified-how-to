@@ -12,6 +12,9 @@ export const dynamic = "force-dynamic";
 
 const STORAGE_BUCKET = "attempt-report-images";
 const SIGNED_URL_TTL_SECONDS = 3600;
+// Số phiếu hiển thị mặc định trước khi thu gọn — tránh rail biến thành một
+// bức tường phiếu giống hệt nhau khi một Cách làm có nhiều lượt thử.
+const VISIBLE_TICKET_COUNT = 5;
 
 type HowToDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -30,6 +33,45 @@ type AttemptReportView = {
   submitted_at: string;
   images: AttemptReportImageView[];
 };
+
+function EvidenceTicketItem({ report, howToId }: { report: AttemptReportView; howToId: string }) {
+  const formattedTimestamp = new Date(report.submitted_at).toLocaleString("vi-VN");
+  return (
+    <li>
+      <article className="evidence-ticket">
+        <div className="evidence-ticket-head">
+          <p className="evidence-timestamp">{formattedTimestamp}</p>
+          <p className="evidence-result" data-result={report.result}>
+            {RESULT_LABELS[report.result]}
+          </p>
+        </div>
+        {report.note && <p className="evidence-note">{report.note}</p>}
+        {report.images.length > 0 && (
+          <div className="evidence-images">
+            {report.images.map(
+              (image) =>
+                image.signedUrl && (
+                  <img
+                    key={image.id}
+                    src={image.signedUrl}
+                    alt={`Ảnh bằng chứng ${image.position}`}
+                    className="evidence-image"
+                  />
+                ),
+            )}
+          </div>
+        )}
+        <div className="evidence-ticket-foot">
+          <DeleteAttemptReportButton
+            reportId={report.id}
+            howToId={howToId}
+            reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
+          />
+        </div>
+      </article>
+    </li>
+  );
+}
 
 export async function generateMetadata({ params }: HowToDetailPageProps): Promise<Metadata> {
   const { id } = await params;
@@ -101,13 +143,29 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
     throw new Error("Không thể tải Bằng chứng. Vui lòng thử lại sau.");
   }
 
-  const imagesByReportId = new Map<string, AttemptReportImageView[]>();
-  for (const image of images ?? []) {
-    const { data: signedUrlData } = await supabase.storage
+  // Một lệnh gọi Storage cho toàn bộ ảnh của trang, thay vì 1 lệnh/ảnh (tránh N+1).
+  const imageList = images ?? [];
+  const signedUrlByPath = new Map<string, string | null>();
+  if (imageList.length > 0) {
+    const { data: signedUrlsData } = await supabase.storage
       .from(STORAGE_BUCKET)
-      .createSignedUrl(image.storage_path, SIGNED_URL_TTL_SECONDS);
+      .createSignedUrls(
+        imageList.map((image) => image.storage_path),
+        SIGNED_URL_TTL_SECONDS,
+      );
+    for (const entry of signedUrlsData ?? []) {
+      signedUrlByPath.set(entry.path ?? "", entry.signedUrl ?? null);
+    }
+  }
+
+  const imagesByReportId = new Map<string, AttemptReportImageView[]>();
+  for (const image of imageList) {
     const list = imagesByReportId.get(image.attempt_report_id) ?? [];
-    list.push({ id: image.id, position: image.position, signedUrl: signedUrlData?.signedUrl ?? null });
+    list.push({
+      id: image.id,
+      position: image.position,
+      signedUrl: signedUrlByPath.get(image.storage_path) ?? null,
+    });
     imagesByReportId.set(image.attempt_report_id, list);
   }
 
@@ -184,46 +242,24 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           {reportViews.length === 0 ? (
             <p className="evidence-empty">Chưa có bằng chứng thực tế</p>
           ) : (
-            <ul className="evidence-list">
-              {reportViews.map((report) => {
-                const formattedTimestamp = new Date(report.submitted_at).toLocaleString("vi-VN");
-                return (
-                  <li key={report.id}>
-                    <article className="evidence-ticket">
-                      <div className="evidence-ticket-head">
-                        <p className="evidence-timestamp">{formattedTimestamp}</p>
-                        <p className="evidence-result" data-result={report.result}>
-                          {RESULT_LABELS[report.result]}
-                        </p>
-                      </div>
-                      {report.note && <p className="evidence-note">{report.note}</p>}
-                      {report.images.length > 0 && (
-                        <div className="evidence-images">
-                          {report.images.map(
-                            (image) =>
-                              image.signedUrl && (
-                                <img
-                                  key={image.id}
-                                  src={image.signedUrl}
-                                  alt={`Ảnh bằng chứng ${image.position}`}
-                                  className="evidence-image"
-                                />
-                              ),
-                          )}
-                        </div>
-                      )}
-                      <div className="evidence-ticket-foot">
-                        <DeleteAttemptReportButton
-                          reportId={report.id}
-                          howToId={id}
-                          reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
-                        />
-                      </div>
-                    </article>
-                  </li>
-                );
-              })}
-            </ul>
+            <>
+              <ul className="evidence-list">
+                {reportViews.slice(0, VISIBLE_TICKET_COUNT).map((report) => (
+                  <EvidenceTicketItem key={report.id} report={report} howToId={id} />
+                ))}
+              </ul>
+
+              {reportViews.length > VISIBLE_TICKET_COUNT && (
+                <details className="evidence-more">
+                  <summary>Xem thêm {reportViews.length - VISIBLE_TICKET_COUNT} báo cáo cũ hơn</summary>
+                  <ul className="evidence-list">
+                    {reportViews.slice(VISIBLE_TICKET_COUNT).map((report) => (
+                      <EvidenceTicketItem key={report.id} report={report} howToId={id} />
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </>
           )}
         </aside>
       </div>

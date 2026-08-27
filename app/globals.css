@@ -43,6 +43,7 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-sans), system-ui, sans-serif;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -260,6 +261,15 @@ ul {
   padding-left: 0;
 }
 
+/* Các bước — nhịp đọc dọc rõ ràng, quan trọng khi một Cách làm có 8-10 bước. */
+.howto-main ol li {
+  padding-left: 0.35rem;
+}
+
+.howto-main ol li + li {
+  margin-top: 0.85rem;
+}
+
 .step-row {
   display: flex;
   align-items: center;
@@ -432,6 +442,46 @@ ul {
   font-style: normal;
 }
 
+/* Với 5+ báo cáo, phần còn lại thu gọn lại — tránh rail biến thành một bức
+   tường phiếu giống hệt nhau (design-direction.md §14 tinh thần "no clutter"). */
+.evidence-more {
+  margin-top: var(--space-md);
+}
+
+.evidence-more summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-ink-blue);
+  padding: 0.4rem 0;
+  list-style: none;
+}
+
+.evidence-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.evidence-more summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 0.35rem;
+  transition: transform 0.15s ease;
+}
+
+.evidence-more[open] summary::before {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evidence-more summary::before {
+    transition: none;
+  }
+}
+
+.evidence-more .evidence-list {
+  margin-top: var(--space-md);
+}
+
 /* Khám phá — danh sách kiểu "mục lục sổ tay" (design-direction.md §5): không phải
    lưới thẻ kiểu SaaS, không phải lưới ảnh Pinterest. Các mục phân cách bằng
    đường kẻ, tiêu đề lớn đọc như một mục lục, chỉ báo số lần thử ở cột riêng bằng mono. */
@@ -495,7 +545,12 @@ ul {
 
 .howto-entry-stats {
   flex: 0 0 auto;
-  text-align: right;
+}
+
+@media (min-width: 480px) {
+  .howto-entry-stats {
+    text-align: right;
+  }
 }
 
 .stat-line {

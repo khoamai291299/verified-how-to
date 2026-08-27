@@ -41,6 +41,9 @@ yarn-error.log*
 # supabase CLI local cache (không phải secret, chỉ là cache công cụ)
 /supabase/.temp
 
+# scratch scripts for manual QA/data seeding — never committed
+/.vqa-tmp
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
