@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, IBM_Plex_Mono } from "next/font/google";
 import Link from "next/link";
+import { getCurrentUser } from "@/lib/supabase/session";
+import { SignOutButton } from "@/app/sign-out/sign-out-button";
 import "./globals.css";
 
 // Be Vietnam Pro + IBM Plex Mono: đã chốt ở design-direction.md §4 — hỗ trợ đầy đủ
@@ -22,7 +24,10 @@ export const metadata: Metadata = {
   description: "Verified How-To Knowledge Platform",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const user = await getCurrentUser();
+  const displayName = (user?.user_metadata as { display_name?: string } | undefined)?.display_name ?? user?.email ?? "";
+
   return (
     <html lang="vi" className={`${bodySans.variable} ${evidenceMono.variable}`}>
       <body>
@@ -32,9 +37,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </Link>
           <nav className="site-nav">
             <Link href="/">Khám phá</Link>
-            <Link href="/how-to/new" className="button-primary">
-              + Tạo cách làm
-            </Link>
+            {user ? (
+              <>
+                <Link href="/saved">Đã lưu</Link>
+                <Link href="/profile">{displayName || "Hồ sơ"}</Link>
+                <Link href="/how-to/new" className="button-primary">
+                  + Tạo cách làm
+                </Link>
+                <SignOutButton />
+              </>
+            ) : (
+              <>
+                <Link href="/sign-in">Đăng nhập</Link>
+                <Link href="/sign-up" className="button-primary">
+                  Đăng ký
+                </Link>
+              </>
+            )}
           </nav>
         </header>
         {children}

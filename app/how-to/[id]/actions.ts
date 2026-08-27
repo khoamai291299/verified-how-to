@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/session";
 import {
   ALLOWED_IMAGE_MIME_TYPES,
   IMAGE_EXTENSION_BY_MIME,
@@ -44,6 +45,13 @@ export async function submitAttemptReport(
   _prevState: SubmitAttemptReportState,
   formData: FormData,
 ): Promise<SubmitAttemptReportState> {
+  // Gửi Lần thử là hành động gắn với danh tính thật — yêu cầu đăng nhập, không
+  // tin bất kỳ user id nào từ client, luôn lấy từ phiên đã xác thực.
+  const user = await getCurrentUser();
+  if (!user) {
+    return { error: "Vui lòng đăng nhập để chia sẻ kết quả." };
+  }
+
   const result = String(formData.get("result") ?? "");
   const note = String(formData.get("note") ?? "").trim();
 
@@ -98,6 +106,7 @@ export async function submitAttemptReport(
       how_to_id: howToId,
       result,
       note: note || null,
+      user_id: user.id,
     })
     .select("id")
     .single();
@@ -156,11 +165,16 @@ export async function deleteAttemptReport(
   _prevState: DeleteState,
   _formData: FormData,
 ): Promise<DeleteState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { error: "Vui lòng đăng nhập." };
+  }
+
   const supabase = getServerSupabaseClient();
 
   const { data: report, error: reportError } = await supabase
     .from("attempt_report")
-    .select("id")
+    .select("id, user_id")
     .eq("id", reportId)
     .maybeSingle();
 
@@ -173,6 +187,12 @@ export async function deleteAttemptReport(
   }
   if (!report) {
     return { error: "Báo cáo không tồn tại." };
+  }
+  // Nội dung không chủ (user_id NULL, ví dụ dữ liệu founder từ trước khi có
+  // tài khoản) không thể xóa qua luồng người dùng đã đăng nhập — chỉ chủ sở
+  // hữu thật mới xóa được nội dung của chính mình.
+  if (report.user_id !== user.id) {
+    return { error: "Bạn không có quyền xóa lần thử này." };
   }
 
   const { data: images, error: imagesError } = await supabase
@@ -207,11 +227,16 @@ export async function deleteAttemptReport(
 }
 
 export async function deleteHowTo(howToId: string, _prevState: DeleteState, _formData: FormData): Promise<DeleteState> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { error: "Vui lòng đăng nhập." };
+  }
+
   const supabase = getServerSupabaseClient();
 
   const { data: howTo, error: howToError } = await supabase
     .from("how_to")
-    .select("id")
+    .select("id, user_id")
     .eq("id", howToId)
     .maybeSingle();
 
@@ -224,6 +249,9 @@ export async function deleteHowTo(howToId: string, _prevState: DeleteState, _for
   }
   if (!howTo) {
     return { error: "Cách làm không tồn tại." };
+  }
+  if (howTo.user_id !== user.id) {
+    return { error: "Bạn không có quyền xóa Cách làm này." };
   }
 
   const { data: reports, error: reportsError } = await supabase

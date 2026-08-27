@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/session";
 import { RESULT_LABELS, type AttemptReportResult, type HowToIngredient } from "@/lib/supabase/types";
 import { SubmitAttemptReportForm } from "./submit-attempt-report-form";
 import { DeleteHowToButton } from "./delete-how-to-button";
 import { DeleteAttemptReportButton } from "./delete-attempt-report-button";
+import { SaveToggleButton } from "@/app/saved/save-toggle-button";
 
 /** Nguyên liệu có cấu trúc — nhóm theo group_name khi có, giữ nguyên thứ tự position. */
 function IngredientList({ ingredients }: { ingredients: HowToIngredient[] }) {
@@ -70,10 +72,19 @@ type AttemptReportView = {
   result: AttemptReportResult;
   note: string | null;
   submitted_at: string;
+  user_id: string | null;
   images: AttemptReportImageView[];
 };
 
-function EvidenceTicketItem({ report, howToId }: { report: AttemptReportView; howToId: string }) {
+function EvidenceTicketItem({
+  report,
+  howToId,
+  currentUserId,
+}: {
+  report: AttemptReportView;
+  howToId: string;
+  currentUserId: string | null;
+}) {
   const submittedDate = new Date(report.submitted_at);
   const formattedTimestamp = submittedDate.toLocaleString("vi-VN");
   const formattedTime = submittedDate.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
@@ -116,6 +127,7 @@ function EvidenceTicketItem({ report, howToId }: { report: AttemptReportView; ho
           reportId={report.id}
           howToId={howToId}
           reportLabel={`${RESULT_LABELS[report.result]} lúc ${formattedTimestamp}`}
+          isOwner={currentUserId !== null && report.user_id === currentUserId}
         />
       </article>
     </li>
@@ -135,10 +147,11 @@ export async function generateMetadata({ params }: HowToDetailPageProps): Promis
 export default async function HowToDetailPage({ params }: HowToDetailPageProps) {
   const { id } = await params;
   const supabase = getServerSupabaseClient();
+  const currentUser = await getCurrentUser();
 
   const { data: howTo, error: howToError } = await supabase
     .from("how_to")
-    .select("id, title, description, expected_outcome, dish:dish_id(id, name)")
+    .select("id, title, description, expected_outcome, user_id, dish:dish_id(id, name)")
     .eq("id", id)
     .maybeSingle();
 
@@ -183,7 +196,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
   const { data: reports, error: reportsError } = await supabase
     .from("attempt_report")
-    .select("id, result, note, submitted_at")
+    .select("id, result, note, submitted_at, user_id")
     .eq("how_to_id", id)
     .order("submitted_at", { ascending: false });
 
@@ -238,6 +251,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
     result: report.result as AttemptReportResult,
     note: report.note,
     submitted_at: report.submitted_at,
+    user_id: report.user_id,
     images: imagesByReportId.get(report.id) ?? [],
   }));
 
@@ -246,6 +260,19 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
   const partialCount = reportViews.filter((r) => r.result === "partial").length;
   const failedCount = reportViews.filter((r) => r.result === "failed").length;
   const evidenceCount = reportViews.reduce((sum, r) => sum + r.images.length, 0);
+
+  const isHowToOwner = currentUser !== null && howTo.user_id === currentUser.id;
+
+  let initiallySaved = false;
+  if (currentUser) {
+    const { data: savedRow } = await supabase
+      .from("saved_how_to")
+      .select("id")
+      .eq("user_id", currentUser.id)
+      .eq("how_to_id", id)
+      .maybeSingle();
+    initiallySaved = savedRow !== null;
+  }
 
   return (
     <main className="main-detail">
@@ -268,6 +295,12 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           </span>
           <h1>{howTo.title}</h1>
           {howTo.description && <p className="supporting-text">{howTo.description}</p>}
+
+          {currentUser && (
+            <div className="save-action">
+              <SaveToggleButton howToId={id} initiallySaved={initiallySaved} />
+            </div>
+          )}
 
           {(ingredients ?? []).length > 0 && (
             <>
@@ -294,7 +327,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           )}
 
           <div className="detail-actions">
-            <DeleteHowToButton howToId={id} attemptReportCount={reportViews.length} />
+            <DeleteHowToButton howToId={id} attemptReportCount={reportViews.length} isOwner={isHowToOwner} />
           </div>
         </div>
 
@@ -315,7 +348,13 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           </section>
 
           <div className="attempt-cta-container">
-            <SubmitAttemptReportForm howToId={id} />
+            {currentUser ? (
+              <SubmitAttemptReportForm howToId={id} />
+            ) : (
+              <p className="supporting-text">
+                <Link href={`/sign-in?redirectTo=/how-to/${id}`}>Đăng nhập</Link> để chia sẻ kết quả bạn đã thử.
+              </p>
+            )}
           </div>
 
           <hr className="evidence-rail-divider" />
@@ -326,7 +365,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
             <>
               <ul className="evidence-list">
                 {reportViews.slice(0, VISIBLE_TICKET_COUNT).map((report) => (
-                  <EvidenceTicketItem key={report.id} report={report} howToId={id} />
+                  <EvidenceTicketItem key={report.id} report={report} howToId={id} currentUserId={currentUser?.id ?? null} />
                 ))}
               </ul>
 
@@ -335,7 +374,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
                   <summary>Xem thêm {reportViews.length - VISIBLE_TICKET_COUNT} lần thử cũ hơn</summary>
                   <ul className="evidence-list">
                     {reportViews.slice(VISIBLE_TICKET_COUNT).map((report) => (
-                      <EvidenceTicketItem key={report.id} report={report} howToId={id} />
+                      <EvidenceTicketItem key={report.id} report={report} howToId={id} currentUserId={currentUser?.id ?? null} />
                     ))}
                   </ul>
                 </details>

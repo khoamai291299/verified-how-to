@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/supabase/session";
 
 export type CreateHowToState = {
   error?: string;
@@ -32,6 +33,13 @@ export async function createHowTo(
   _prevState: CreateHowToState,
   formData: FormData,
 ): Promise<CreateHowToState> {
+  // Trang /how-to/new đã chặn người chưa đăng nhập, nhưng Server Action luôn
+  // tự kiểm tra lại — không bao giờ tin form đã được gác ở phía trang.
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/sign-in?redirectTo=/how-to/new");
+  }
+
   const title = String(formData.get("title") ?? "").trim();
   const dishName = String(formData.get("dish") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
@@ -80,6 +88,7 @@ export async function createHowTo(
       dish_id: dish.id,
       description: description || null,
       expected_outcome: expectedOutcome || null,
+      user_id: user.id,
     })
     .select("id")
     .single();

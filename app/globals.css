@@ -1015,6 +1015,37 @@ ul {
   justify-content: flex-end;
 }
 
+.save-action {
+  margin-bottom: var(--space-md);
+}
+
+.save-action form {
+  display: inline-block;
+}
+
+.save-error {
+  margin-top: 0.25rem;
+}
+
+.profile-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  margin: var(--space-md) 0 var(--space-lg);
+}
+
+.profile-stats dt {
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  margin-bottom: 0.15rem;
+}
+
+.profile-stats dd {
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-family: var(--font-mono), monospace;
+}
+
 .outcome-stats {
   margin-bottom: 0;
 }

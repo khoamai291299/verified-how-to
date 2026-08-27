@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/supabase/session";
 import { CreateHowToForm } from "./create-how-to-form";
 
 export const metadata: Metadata = {
   title: "Chia sẻ một cách làm – VHKP",
 };
 
-export default function NewHowToPage() {
+export default async function NewHowToPage() {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/sign-in?redirectTo=/how-to/new");
+  }
+
   return (
     <main>
       <h1>Chia sẻ một cách làm</h1>

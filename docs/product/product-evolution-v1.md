@@ -60,13 +60,48 @@ Tên bảng CSDL, tên biến code, tên class CSS (`attempt_report`, `evidence-
 Toàn bộ 4 thực thể gốc (`how_to`, `how_to_step`, `attempt_report`,
 `attempt_report_image`) giữ nguyên, không đổi cấu trúc.
 
+### 2.4. Tài khoản/Đăng nhập (thay thế mục 3 gốc "Không tài khoản/đăng nhập trong phạm vi V1 này")
+
+**[QUYẾT ĐỊNH MỚI, 2026-08-28]** Founder xác nhận thêm xác thực thật: Supabase
+Auth (email/mật khẩu). Không có bảng "profile" riêng — tên hiển thị lưu trong
+`user_metadata` của `auth.users`, tránh một bảng chỉ để giữ một cột.
+
+- `how_to` và `attempt_report` có thêm cột `user_id` (nullable, tham chiếu
+  `auth.users`, `on delete set null`). 7 How-To và 17 Lần thử **hiện có tại
+  thời điểm migration giữ nguyên `user_id = NULL`** ("không chủ sở hữu") —
+  **không** gán ngược cho bất kỳ tài khoản nào, kể cả tài khoản của founder.
+  Đây là lựa chọn tường minh, không phải thiếu sót: nội dung MVP là công sức
+  chung ở giai đoạn chưa có khái niệm tài khoản.
+- Bảng mới `saved_how_to` (người dùng lưu một How-To để xem lại — riêng tư,
+  không phải phản ứng công khai).
+- **Ủy quyền xóa dựa trên quyền sở hữu**: chỉ chủ sở hữu thật (`user_id` khớp
+  người đang đăng nhập) mới xóa được How-To/Lần thử của chính mình qua UI.
+  Nội dung không chủ (`user_id IS NULL`, gồm toàn bộ dữ liệu founder có trước
+  migration này) **không thể xóa qua luồng người dùng đã đăng nhập** — nút xóa
+  bị ẩn hoàn toàn với mọi người xem, kể cả chính founder nếu đăng nhập bằng
+  tài khoản mới. Đây vừa là hệ quả tự nhiên của mô hình sở hữu, vừa là một lớp
+  bảo vệ cấu trúc cho dữ liệu MVP thật.
+- Tạo How-To và gửi Lần thử ("Chia sẻ kết quả") nay **yêu cầu đăng nhập** —
+  nhất quán với việc đây là hành động gắn với danh tính thật, không còn ẩn
+  danh. Xem trang How-To vẫn hoàn toàn công khai, không yêu cầu đăng nhập.
+- Xác thực luôn được server tự kiểm tra lại qua `getCurrentUser()` trong mỗi
+  Server Action — không bao giờ tin `user_id` do client gửi lên. Giữ nguyên
+  kiến trúc "RLS là defense-in-depth, ủy quyền thật ở tầng application code"
+  đã chấp nhận từ MVP: client Supabase phiên đăng nhập (anon key, qua
+  `@supabase/ssr`) chỉ dùng để biết "ai đang đăng nhập"; toàn bộ truy vấn dữ
+  liệu vẫn qua client `service_role` hiện có.
+
+**Phạm vi round này cố ý dừng ở đây** — Sửa/Edit How-To, Category, và
+Collection (được nêu trong yêu cầu mở rộng sản phẩm rộng hơn) chưa triển khai,
+để dành cho round kế tiếp.
+
 ## 3. Điều KHÔNG thay đổi
 
 - **Evidence ≠ Truth** vẫn là nguyên tắc thiết kế cao nhất (`design-direction.md`
   §1.1). Việc đổi nhãn hiển thị ở mục 2.2 là thay đổi giọng điệu, không phải
   từ bỏ nguyên tắc — sản phẩm vẫn không tuyên bố "đã xác minh" ở bất kỳ đâu.
-- Không Trust Score, không rating tổng hợp thay thế dữ liệu Attempt thật.
-- Không tài khoản/đăng nhập trong phạm vi V1 này.
+- Không Trust Score, không rating tổng hợp thay thế dữ liệu Attempt thật. Tài
+  khoản (mục 2.4) chỉ xác định *ai đã viết gì* — không biến thành điểm uy tín.
 - Không fabricate dữ liệu — mọi nội dung Dish/Ingredient được thêm cho 7
   How-To hiện có là nội dung thật do phiên làm việc này biên soạn dựa trên nội
   dung gốc, không phải dữ liệu giả lập trình bày như dữ liệu người dùng thật.
@@ -89,6 +124,10 @@ triển khai** ở V1 này (không phải bị quên):
   How-To cung cấp chưa được triển khai ở V1 này.
 - **Discover biên tập** (mục "được thử nhiều nhất", collection theo mùa...)
   — Discover V1 vẫn là danh sách, có thêm ô tìm kiếm.
+- **Sửa How-To sau khi đăng** — chủ sở hữu hiện chỉ có thể xóa, chưa sửa nội
+  dung. Xóa rồi đăng lại là cách xử lý tạm thời.
+- **Collection do người dùng tự tạo** (khác với `saved_how_to`, vốn chỉ là một
+  danh sách lưu phẳng của cá nhân, không có tên/mô tả/chia sẻ công khai).
 
 ## 5. Ghi chú migration
 

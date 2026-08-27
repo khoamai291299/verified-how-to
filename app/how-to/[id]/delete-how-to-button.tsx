@@ -6,9 +6,21 @@ import { ConfirmDeleteDialog } from "./confirm-delete-dialog";
 
 const initialState: DeleteState = {};
 
-export function DeleteHowToButton({ howToId, attemptReportCount }: { howToId: string; attemptReportCount: number }) {
+export function DeleteHowToButton({
+  howToId,
+  attemptReportCount,
+  isOwner,
+}: {
+  howToId: string;
+  attemptReportCount: number;
+  isOwner: boolean;
+}) {
   const action = deleteHowTo.bind(null, howToId);
   const [state, formAction, pending] = useActionState(action, initialState);
+
+  if (!isOwner) {
+    return null;
+  }
 
   const message =
     attemptReportCount > 0
