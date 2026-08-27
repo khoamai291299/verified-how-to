@@ -33,3 +33,24 @@ export const IMAGE_EXTENSION_BY_MIME: Record<AllowedImageMimeType, string> = {
   "image/png": "png",
   "image/webp": "webp",
 };
+
+/**
+ * Product Evolution V1 (docs/product/product-evolution-v1.md) — thêm Dish và
+ * Ingredient có cấu trúc. Ingredient theo phạm vi TỪNG How-To (không phải một
+ * catalog nguyên liệu toàn cục) — xem tài liệu quyết định để biết lý do.
+ */
+export type Dish = {
+  id: string;
+  name: string;
+};
+
+export type HowToIngredient = {
+  id: string;
+  position: number;
+  group_name: string | null;
+  name: string;
+  quantity: string | null;
+  unit: string | null;
+  preparation: string | null;
+  is_required: boolean;
+};

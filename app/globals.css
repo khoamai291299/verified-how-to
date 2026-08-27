@@ -339,6 +339,57 @@ ul {
   padding-left: 0;
 }
 
+/* Nguyên liệu — cấu trúc thật (tên/lượng/đơn vị/sơ chế), không phải một khối
+   văn bản. Số lượng dùng mono, cùng ngôn ngữ với mọi dữ liệu định lượng khác
+   trong sản phẩm (timestamp, kết quả), tách biệt khỏi giọng tường thuật. */
+.ingredient-group + .ingredient-group {
+  margin-top: var(--space-md);
+}
+
+.ingredient-group-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  margin-bottom: 0.35rem;
+}
+
+.ingredient-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ingredient-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ingredient-name {
+  flex: 1;
+}
+
+.ingredient-optional {
+  color: var(--color-ink-soft);
+  font-weight: 400;
+  font-size: 0.9em;
+}
+
+.ingredient-prep {
+  color: var(--color-ink-soft);
+}
+
+.ingredient-amount {
+  flex: 0 0 auto;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.85rem;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+}
+
 /* Các bước — thứ tự thực sự mang thông tin (phải làm trước-sau), nên đánh số
    lớn, rõ ràng thay vì marker mặc định của trình duyệt. Nhịp đọc dọc rộng rãi,
    quan trọng khi một Cách làm có 8-10 bước. */
@@ -388,6 +439,23 @@ ul {
 
 .step-row input {
   flex: 1;
+}
+
+.ingredient-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ingredient-row input:nth-child(1) {
+  flex: 2 1 10rem;
+}
+
+.ingredient-row input:nth-child(2),
+.ingredient-row input:nth-child(3) {
+  flex: 1 1 6rem;
 }
 
 .result-options {
@@ -659,6 +727,30 @@ ul {
 
 .evidence-more .evidence-list {
   margin-top: var(--space-md);
+}
+
+/* Search V1 — form GET thuần, hoạt động không cần JS, điều hướng URL thật
+   (?q=...) để có thể chia sẻ/back-forward như một trang thật. */
+.search-form {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 30rem;
+  margin-bottom: var(--space-lg);
+}
+
+.search-form input {
+  flex: 1;
+}
+
+/* Nhãn Dish — nhỏ, lặng, đứng trên tiêu đề How-To để phân biệt "món" khỏi
+   "cách làm cụ thể" mà không cần một khối UI riêng. */
+.dish-label {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-soft);
+  margin-bottom: 0.2rem;
 }
 
 /* Khám phá — mục lục sổ tay có sức nặng thị giác thật: mỗi mục mang theo một

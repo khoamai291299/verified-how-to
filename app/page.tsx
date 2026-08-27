@@ -13,18 +13,77 @@ type HowToCardData = {
   id: string;
   title: string;
   description: string | null;
+  dishName: string | null;
   attempts: number;
   results: AttemptReportResult[];
   evidence: number;
   specimenUrl: string | null;
 };
 
-export default async function DiscoverPage() {
+type DiscoverPageProps = {
+  searchParams: Promise<{ q?: string }>;
+};
+
+/**
+ * Search V1 (docs/product/product-evolution-v1.md) — khớp tất định trên
+ * title/description/dish/ingredient, xếp hạng bằng điểm cộng dồn đơn giản
+ * theo trường khớp. Không dùng full-text search/semantic — cố ý, xem §4 tài
+ * liệu quyết định: bắt đầu từ retrieval tất định, mở rộng sau khi cần thật.
+ */
+async function searchHowToIds(
+  supabase: ReturnType<typeof getServerSupabaseClient>,
+  query: string,
+): Promise<Map<string, number>> {
+  const like = `%${query}%`;
+  const scoreByHowToId = new Map<string, number>();
+  const addScore = (howToId: string, points: number) => {
+    scoreByHowToId.set(howToId, (scoreByHowToId.get(howToId) ?? 0) + points);
+  };
+
+  const [titleMatches, dishMatches, ingredientMatches] = await Promise.all([
+    supabase.from("how_to").select("id, title, description").or(`title.ilike.${like},description.ilike.${like}`),
+    supabase.from("dish").select("id, name").ilike("name", like),
+    supabase.from("how_to_ingredient").select("how_to_id, name").ilike("name", like),
+  ]);
+
+  for (const row of titleMatches.data ?? []) {
+    addScore(row.id, row.title.toLowerCase().includes(query.toLowerCase()) ? 3 : 1);
+  }
+
+  const dishIds = (dishMatches.data ?? []).map((d) => d.id);
+  if (dishIds.length > 0) {
+    const { data: howTosByDish } = await supabase.from("how_to").select("id").in("dish_id", dishIds);
+    for (const row of howTosByDish ?? []) addScore(row.id, 3);
+  }
+
+  for (const row of ingredientMatches.data ?? []) {
+    addScore(row.how_to_id, 2);
+  }
+
+  return scoreByHowToId;
+}
+
+export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
+  const { q } = await searchParams;
+  const query = (q ?? "").trim();
   const supabase = getServerSupabaseClient();
-  const { data: howTos, error } = await supabase
+
+  let matchScoreByHowToId: Map<string, number> | null = null;
+  if (query.length > 0) {
+    matchScoreByHowToId = await searchHowToIds(supabase, query);
+  }
+
+  let howToQuery = supabase
     .from("how_to")
-    .select("id, title, description")
+    .select("id, title, description, dish:dish_id(name)")
     .order("created_at", { ascending: false });
+
+  if (matchScoreByHowToId) {
+    const matchedIds = [...matchScoreByHowToId.keys()];
+    howToQuery = howToQuery.in("id", matchedIds.length > 0 ? matchedIds : ["00000000-0000-0000-0000-000000000000"]);
+  }
+
+  const { data: howTosRaw, error } = await howToQuery;
 
   if (error) {
     console.error("Lỗi tải danh sách Cách làm:", error);
@@ -35,6 +94,12 @@ export default async function DiscoverPage() {
       </main>
     );
   }
+
+  const howTos = matchScoreByHowToId
+    ? [...howTosRaw].sort(
+        (a, b) => (matchScoreByHowToId!.get(b.id) ?? 0) - (matchScoreByHowToId!.get(a.id) ?? 0),
+      )
+    : howTosRaw;
 
   const howToIds = howTos.map((h) => h.id);
 
@@ -98,10 +163,13 @@ export default async function DiscoverPage() {
   const cards: HowToCardData[] = howTos.map((h) => {
     const results = resultsByHowTo.get(h.id) ?? [];
     const specimenPath = specimenPathByHowTo.get(h.id);
+    const dishRaw = (h as { dish?: { name: string } | { name: string }[] | null }).dish;
+    const dish = Array.isArray(dishRaw) ? (dishRaw[0] ?? null) : (dishRaw ?? null);
     return {
       id: h.id,
       title: h.title,
       description: h.description,
+      dishName: dish?.name ?? null,
       attempts: results.length,
       results,
       evidence: evidenceCountByHowTo.get(h.id) ?? 0,
@@ -116,12 +184,41 @@ export default async function DiscoverPage() {
 
   return (
     <main className="main-list">
+      <form role="search" action="/" method="GET" className="search-form">
+        <label htmlFor="q" className="sr-only">
+          Tìm theo tên, mô tả, hoặc nguyên liệu
+        </label>
+        <input
+          id="q"
+          type="search"
+          name="q"
+          defaultValue={query}
+          placeholder="Tìm theo tên, mô tả, hoặc nguyên liệu…"
+        />
+        <button type="submit" className="secondary">
+          Tìm
+        </button>
+      </form>
+
       <section className="hero">
         <div className="hero-text">
-          <h1>Những cách làm đã được người thật thử</h1>
-          <p className="supporting-text">
-            Mỗi cách làm ở đây đi kèm báo cáo thật từ người đã thử — không chỉ là hướng dẫn lý thuyết.
-          </p>
+          {query ? (
+            <>
+              <h1>Kết quả cho “{query}”</h1>
+              <p className="supporting-text">
+                {cards.length === 0
+                  ? "Không tìm thấy cách làm nào phù hợp."
+                  : `${cards.length} cách làm phù hợp với tên, mô tả, hoặc nguyên liệu bạn tìm.`}
+              </p>
+            </>
+          ) : (
+            <>
+              <h1>Những cách làm đã được người thật thử</h1>
+              <p className="supporting-text">
+                Mỗi cách làm ở đây đi kèm báo cáo thật từ người đã thử — không chỉ là hướng dẫn lý thuyết.
+              </p>
+            </>
+          )}
         </div>
         {totalAttempts > 0 && (
           <div className="hero-evidence" role="img" aria-label={`${totalAttempts} lần thử thật đã ghi nhận trên toàn bộ cách làm`}>
@@ -139,13 +236,19 @@ export default async function DiscoverPage() {
       </section>
 
       {cards.length === 0 ? (
-        <div>
-          <p>Chưa có cách làm nào.</p>
-          <p className="supporting-text">Hãy chia sẻ cách làm đầu tiên.</p>
-          <Link href="/how-to/new" className="button-primary">
-            Tạo cách làm
-          </Link>
-        </div>
+        query ? (
+          <div>
+            <Link href="/">Xóa tìm kiếm, xem tất cả cách làm →</Link>
+          </div>
+        ) : (
+          <div>
+            <p>Chưa có cách làm nào.</p>
+            <p className="supporting-text">Hãy chia sẻ cách làm đầu tiên.</p>
+            <Link href="/how-to/new" className="button-primary">
+              Tạo cách làm
+            </Link>
+          </div>
+        )
       ) : (
         <ul className="howto-list">
           {cards.map((card) => (
@@ -160,6 +263,7 @@ export default async function DiscoverPage() {
                 </div>
 
                 <div className="howto-entry-main">
+                  {card.dishName && <p className="dish-label">{card.dishName}</p>}
                   <h2>
                     <Link href={`/how-to/${card.id}`}>{card.title}</Link>
                   </h2>

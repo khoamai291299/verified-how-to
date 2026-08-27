@@ -2,10 +2,49 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
-import { RESULT_LABELS, type AttemptReportResult } from "@/lib/supabase/types";
+import { RESULT_LABELS, type AttemptReportResult, type HowToIngredient } from "@/lib/supabase/types";
 import { SubmitAttemptReportForm } from "./submit-attempt-report-form";
 import { DeleteHowToButton } from "./delete-how-to-button";
 import { DeleteAttemptReportButton } from "./delete-attempt-report-button";
+
+/** Nguyên liệu có cấu trúc — nhóm theo group_name khi có, giữ nguyên thứ tự position. */
+function IngredientList({ ingredients }: { ingredients: HowToIngredient[] }) {
+  const groups: { name: string | null; items: HowToIngredient[] }[] = [];
+  for (const ingredient of ingredients) {
+    const last = groups[groups.length - 1];
+    if (last && last.name === ingredient.group_name) {
+      last.items.push(ingredient);
+    } else {
+      groups.push({ name: ingredient.group_name, items: [ingredient] });
+    }
+  }
+
+  return (
+    <div className="ingredient-groups">
+      {groups.map((group, i) => (
+        <div key={i} className="ingredient-group">
+          {group.name && <p className="ingredient-group-name">{group.name}</p>}
+          <ul className="ingredient-list">
+            {group.items.map((ing) => (
+              <li key={ing.id} className="ingredient-item">
+                <span className="ingredient-name">
+                  {ing.name}
+                  {!ing.is_required && <span className="ingredient-optional"> (tùy chọn)</span>}
+                </span>
+                {(ing.quantity || ing.unit) && (
+                  <span className="ingredient-amount">
+                    {[ing.quantity, ing.unit].filter(Boolean).join(" ")}
+                  </span>
+                )}
+                {ing.preparation && <span className="ingredient-prep"> — {ing.preparation}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // Nội dung phụ thuộc dữ liệu thật (How-To + Evidence) — không prerender tĩnh lúc build.
 export const dynamic = "force-dynamic";
@@ -99,7 +138,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
   const { data: howTo, error: howToError } = await supabase
     .from("how_to")
-    .select("id, title, description, expected_outcome")
+    .select("id, title, description, expected_outcome, dish:dish_id(id, name)")
     .eq("id", id)
     .maybeSingle();
 
@@ -116,6 +155,10 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
     notFound();
   }
 
+  // PostgREST trả embed FK dạng mảng theo kiểu suy luận mặc định của client dù
+  // dish_id là quan hệ nhiều-một — chuẩn hóa về một object (hoặc null) ở đây.
+  const dish = Array.isArray(howTo.dish) ? (howTo.dish[0] ?? null) : (howTo.dish ?? null);
+
   const { data: steps, error: stepsError } = await supabase
     .from("how_to_step")
     .select("id, instruction")
@@ -125,6 +168,17 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
   if (stepsError) {
     console.error("Lỗi tải các bước:", stepsError);
     throw new Error("Không thể tải các bước. Vui lòng thử lại sau.");
+  }
+
+  const { data: ingredients, error: ingredientsError } = await supabase
+    .from("how_to_ingredient")
+    .select("id, position, group_name, name, quantity, unit, preparation, is_required")
+    .eq("how_to_id", id)
+    .order("position", { ascending: true });
+
+  if (ingredientsError) {
+    console.error("Lỗi tải nguyên liệu:", ingredientsError);
+    throw new Error("Không thể tải nguyên liệu. Vui lòng thử lại sau.");
   }
 
   const { data: reports, error: reportsError } = await supabase
@@ -201,9 +255,17 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
       <div className="howto-layout">
         <div className="howto-main">
-          <span className="eyebrow">Cách làm</span>
+          <span className="eyebrow">Cách làm{dish ? ` · ${dish.name}` : ""}</span>
           <h1>{howTo.title}</h1>
           {howTo.description && <p className="supporting-text">{howTo.description}</p>}
+
+          {(ingredients ?? []).length > 0 && (
+            <>
+              <hr className="section-divider" />
+              <span className="eyebrow">Nguyên liệu</span>
+              <IngredientList ingredients={ingredients ?? []} />
+            </>
+          )}
 
           <hr className="section-divider" />
 
