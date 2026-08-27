@@ -324,6 +324,39 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
     return acc;
   }, {});
 
+  // "Khám phá theo nguyên liệu" — lối vào khám phá không cần gõ chữ, dùng
+  // tần suất nguyên liệu THẬT trên toàn bộ Cách làm (không suy diễn độ phổ
+  // biến). Loại các nguyên liệu quá phổ thông (dầu ăn, muối, nước...) vì
+  // chúng không phân biệt được món nào với món nào — đây là biên tập hợp lý
+  // trên dữ liệu thật, không phải bịa dữ liệu.
+  const STAPLE_INGREDIENTS = new Set(["dầu ăn", "muối", "nước", "nước lọc", "đá viên", "nước sôi", "đường", "tiêu"]);
+  let ingredientDiscovery: { name: string; howToId: string; specimenUrl: string | null }[] = [];
+  if (isBrowsingHome && howToIds.length > 0) {
+    const { data: allIngredients } = await supabase
+      .from("how_to_ingredient")
+      .select("how_to_id, name")
+      .in("how_to_id", howToIds);
+
+    const howToIdsByName = new Map<string, Set<string>>();
+    for (const row of allIngredients ?? []) {
+      const key = row.name.trim().toLowerCase();
+      if (STAPLE_INGREDIENTS.has(key)) continue;
+      const set = howToIdsByName.get(key) ?? new Set<string>();
+      set.add(row.how_to_id);
+      howToIdsByName.set(key, set);
+    }
+
+    ingredientDiscovery = [...howToIdsByName.entries()]
+      .sort((a, b) => b[1].size - a[1].size || a[0].localeCompare(b[0], "vi"))
+      .slice(0, 6)
+      .map(([name, ids]) => {
+        const candidateCards = cards.filter((c) => ids.has(c.id));
+        const withPhoto = candidateCards.find((c) => c.specimenUrl);
+        const chosen = withPhoto ?? candidateCards[0];
+        return { name, howToId: chosen.id, specimenUrl: chosen.specimenUrl };
+      });
+  }
+
   // "Chuyện xảy ra khi thử" — tín hiệu về sản phẩm mạnh nhất: một ghi chú thật
   // của người đã thử, không phải một số liệu tổng hợp. Chỉ hiện ở Trang chủ
   // gốc (không tìm kiếm/lọc), ưu tiên ghi chú có ảnh, mới nhất trước.
@@ -351,6 +384,28 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
         .slice(0, 2)
     : [];
 
+  // Gợi ý khi tìm không ra kết quả — Món khác có thật trong hệ thống, không
+  // phải danh sách tĩnh bịa ra. Chỉ truy vấn khi thật sự cần (không có kết
+  // quả cho một tìm kiếm/lọc thật).
+  const noResultSuggestions: { id: string; name: string }[] = [];
+  if (cards.length === 0 && (query || activeCategory)) {
+    const { data: recentHowTos } = await supabase
+      .from("how_to")
+      .select("dish:dish_id(id, name)")
+      .order("created_at", { ascending: false })
+      .limit(8);
+    const seen = new Set<string>();
+    for (const row of recentHowTos ?? []) {
+      const dishRaw = (row as { dish?: { id: string; name: string } | { id: string; name: string }[] | null }).dish;
+      const dish = Array.isArray(dishRaw) ? (dishRaw[0] ?? null) : (dishRaw ?? null);
+      if (dish && !seen.has(dish.id)) {
+        seen.add(dish.id);
+        noResultSuggestions.push({ id: dish.id, name: dish.name });
+      }
+      if (noResultSuggestions.length >= 4) break;
+    }
+  }
+
   return (
     <main className="main-list">
       <form role="search" action="/" method="GET" className="search-form">
@@ -372,12 +427,12 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           {query ? (
             <>
               <h1>Kết quả cho “{query}”</h1>
-              <p className="supporting-text">
-                {cards.length === 0
-                  ? "Không tìm thấy cách làm nào phù hợp."
-                  : `${cards.length} cách làm phù hợp với tên, mô tả, hoặc nguyên liệu bạn tìm.`}
-                {activeCategory && ` trong "${activeCategory.name}"`}
-              </p>
+              {cards.length > 0 && (
+                <p className="supporting-text">
+                  {cards.length} cách làm phù hợp với tên, mô tả, hoặc nguyên liệu bạn tìm.
+                  {activeCategory && ` trong "${activeCategory.name}"`}
+                </p>
+              )}
             </>
           ) : activeCategory ? (
             <>
@@ -436,6 +491,24 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
         </nav>
       )}
 
+      {ingredientDiscovery.length > 0 && (
+        <section aria-label="Khám phá theo nguyên liệu" className="ingredient-discovery-section">
+          <span className="eyebrow">Khám phá theo nguyên liệu</span>
+          <div className="ingredient-discovery">
+            {ingredientDiscovery.map((item) => (
+              <Link key={item.name} href={`/?q=${encodeURIComponent(item.name)}`} className="ingredient-tile">
+                {item.specimenUrl ? (
+                  <img src={item.specimenUrl} alt="" />
+                ) : (
+                  <span className="specimen-empty" />
+                )}
+                <span className="ingredient-tile-label">{item.name}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {featured.length > 0 && (
         <section aria-label="Được thử nhiều nhất">
           <span className="eyebrow">Được thử nhiều nhất</span>
@@ -474,8 +547,27 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 
       {cards.length === 0 ? (
         query || activeCategory ? (
-          <div>
-            <Link href="/">Xóa bộ lọc, xem tất cả cách làm →</Link>
+          <div className="no-results">
+            <p className="supporting-text">
+              {query
+                ? `Chưa tìm thấy cách làm nào cho "${query}".`
+                : "Chưa có cách làm nào trong danh mục này."}
+            </p>
+            {noResultSuggestions.length > 0 && (
+              <>
+                <p className="supporting-text">Có thể bạn muốn xem:</p>
+                <div className="category-chips">
+                  {noResultSuggestions.map((d) => (
+                    <Link key={d.id} href={`/dish/${d.id}`} className="category-chip">
+                      {d.name}
+                    </Link>
+                  ))}
+                </div>
+              </>
+            )}
+            <p>
+              <Link href="/">Xóa bộ lọc, xem tất cả cách làm →</Link>
+            </p>
           </div>
         ) : (
           <div>

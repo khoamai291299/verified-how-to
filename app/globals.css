@@ -436,7 +436,9 @@ h2 {
    ========================================================================= */
 
 form > div,
-form > fieldset {
+form > fieldset,
+.form-fields > div,
+.form-fields > fieldset {
   margin-bottom: 1.1rem;
 }
 
@@ -712,6 +714,40 @@ ul {
 
 /* Nhập nguyên liệu tự nhiên — bước đề xuất trước khi vào danh sách có cấu
    trúc bên dưới, người dùng luôn xem lại/sửa trước khi đăng. */
+.form-actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+/* Xem trước — dùng lại chính khung `.howto-main` của trang chi tiết thật,
+   để người dùng thấy đúng cái sắp đăng, không phải một bản tóm tắt khác. */
+.preview-panel {
+  margin-bottom: var(--space-lg);
+}
+
+.preview-panel-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 0.6rem var(--space-md);
+  margin-bottom: var(--space-md);
+  background: var(--color-ember-tint);
+  border: 1px solid var(--color-ember);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ember-deep);
+}
+
+.howto-preview {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  background: var(--color-paper-raised);
+}
+
 .ingredient-parser {
   background: var(--color-paper-raised);
   border: 1px solid var(--color-line);
@@ -1309,6 +1345,59 @@ ul {
 .howto-list {
   display: flex;
   flex-direction: column;
+}
+
+.no-results .category-chips {
+  margin-bottom: var(--space-md);
+}
+
+/* Khám phá theo nguyên liệu — lối vào khám phá không cần gõ chữ, dùng tần
+   suất nguyên liệu thật (không suy diễn độ phổ biến). */
+.ingredient-discovery-section {
+  margin-bottom: var(--space-xl);
+}
+
+.ingredient-discovery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.ingredient-tile {
+  position: relative;
+  flex: 0 0 auto;
+  width: 128px;
+  height: 128px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-paper-deep);
+  text-decoration: none;
+}
+
+.ingredient-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ingredient-tile .specimen-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ingredient-tile-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1.6rem 0.65rem 0.6rem;
+  background: linear-gradient(to top, rgba(23, 20, 15, 0.82), rgba(23, 20, 15, 0));
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: lowercase;
 }
 
 /* Kệ "Nổi bật" — điểm ảnh-là-trọng-tâm duy nhất trên Khám phá: lưới thẻ
