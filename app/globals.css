@@ -21,7 +21,10 @@
   /* ---- Ink (narrative voice) ---- */
   --color-ink: #17140f;
   --color-ink-soft: #5c5647;
-  --color-ink-faint: #8c8574;
+  /* Giá trị gốc (#8c8574) chỉ đạt 3.49:1 trên nền paper — dưới ngưỡng AA
+     4.5:1 cho chữ thường (phát hiện bằng axe-core, không phải áng chừng).
+     #6f6853 đạt 5.28:1, kiểm tra bằng script. */
+  --color-ink-faint: #6f6853;
 
   /* ---- Lines ---- */
   --color-line: #e3ddcd;
@@ -1134,13 +1137,13 @@ ul {
   color: var(--color-ember-deep);
 }
 
+/* Link nằm giữa văn bản eyebrow (cùng màu, cùng cỡ chữ với chữ xung quanh)
+   — cần gạch chân thường trực để phân biệt được mà không chỉ dựa vào màu
+   sắc (axe-core: "link-in-text-block"), không chỉ khi hover/focus. */
 .eyebrow-link {
-  text-decoration: none;
-}
-
-.eyebrow-link:hover,
-.eyebrow-link:focus-visible {
   text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 /* =========================================================================
@@ -1971,6 +1974,19 @@ ul {
   font-weight: 500;
 }
 
+/* Ảnh xem trước ngay khi chọn — ảnh là bằng chứng thật, không nên chỉ là một
+   input file trần "Choose File / No file chosen". */
+.attempt-image-preview {
+  display: block;
+  width: 100%;
+  max-width: 8rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-line);
+  margin: 0.35rem 0;
+}
+
 .site-footer {
   margin-top: var(--space-xl);
   padding: var(--space-md);
@@ -1998,6 +2014,49 @@ ul {
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.4s ease-in-out infinite;
   border-radius: var(--radius-sm);
+}
+
+.skeleton-search {
+  height: 3.4rem;
+  max-width: 34rem;
+  margin-bottom: var(--space-xl);
+}
+
+.skeleton-hero-title {
+  height: 2.6rem;
+  width: 70%;
+  margin-bottom: 0.75rem;
+}
+
+.skeleton-hero-subtitle {
+  height: 1.8rem;
+  width: 55%;
+  margin-bottom: 1.5rem;
+}
+
+.skeleton-row {
+  height: 108px;
+  margin-bottom: var(--space-md);
+}
+
+.skeleton-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-bottom: var(--space-lg);
+}
+
+.skeleton-line {
+  height: 1rem;
+  width: 100%;
+  margin-bottom: 0.6rem;
+}
+
+.skeleton-line:nth-child(2) {
+  width: 90%;
+}
+
+.skeleton-line:nth-child(3) {
+  width: 65%;
 }
 
 @keyframes skeleton-shimmer {

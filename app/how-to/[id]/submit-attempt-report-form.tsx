@@ -1,10 +1,51 @@
 "use client";
 
-import { useActionState, useEffect, useId, useRef, useState } from "react";
+import { useActionState, useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 import { submitAttemptReport, type SubmitAttemptReportState } from "./actions";
 import { RESULT_VALUES, RESULT_LABELS } from "@/lib/supabase/types";
 
 const initialState: SubmitAttemptReportState = {};
+
+/** Ảnh là bằng chứng thật — cho xem trước ngay khi chọn thay vì để input
+ * file trần "Choose File / No file chosen" không nói lên điều gì. Input gốc
+ * vẫn hiển thị bình thường (giữ nguyên hành vi bàn phím/trình đọc màn hình
+ * mặc định của trình duyệt) — chỉ thêm ảnh xem trước bên trên. */
+function ImageUploadSlot({
+  id,
+  name,
+  label,
+  disabled,
+  describedBy,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  disabled: boolean;
+  describedBy?: string;
+}) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    setPreviewUrl(file ? URL.createObjectURL(file) : null);
+  }
+
+  return (
+    <div>
+      <label htmlFor={id}>{label}</label>
+      {previewUrl && <img src={previewUrl} alt="" className="attempt-image-preview" />}
+      <input
+        id={id}
+        name={name}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        disabled={disabled}
+        onChange={handleChange}
+        aria-describedby={describedBy}
+      />
+    </div>
+  );
+}
 
 export function SubmitAttemptReportForm({ howToId }: { howToId: string }) {
   const action = submitAttemptReport.bind(null, howToId);
@@ -65,39 +106,27 @@ export function SubmitAttemptReportForm({ howToId }: { howToId: string }) {
         <div>
           <label id="evidence-group-label">Ảnh kết quả (tùy chọn)</label>
           <div className="evidence-upload-group" role="group" aria-labelledby="evidence-group-label">
-            <div>
-              <label htmlFor="image1">Ảnh 1</label>
-              <input
-                id="image1"
-                name="image1"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                disabled={pending}
-                aria-describedby={state.fieldErrors?.images ? "images-error" : undefined}
-              />
-            </div>
-            <div>
-              <label htmlFor="image2">Ảnh 2</label>
-              <input
-                id="image2"
-                name="image2"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                disabled={pending}
-                aria-describedby={state.fieldErrors?.images ? "images-error" : undefined}
-              />
-            </div>
-            <div>
-              <label htmlFor="image3">Ảnh 3</label>
-              <input
-                id="image3"
-                name="image3"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                disabled={pending}
-                aria-describedby={state.fieldErrors?.images ? "images-error" : undefined}
-              />
-            </div>
+            <ImageUploadSlot
+              id="image1"
+              name="image1"
+              label="Ảnh 1"
+              disabled={pending}
+              describedBy={state.fieldErrors?.images ? "images-error" : undefined}
+            />
+            <ImageUploadSlot
+              id="image2"
+              name="image2"
+              label="Ảnh 2"
+              disabled={pending}
+              describedBy={state.fieldErrors?.images ? "images-error" : undefined}
+            />
+            <ImageUploadSlot
+              id="image3"
+              name="image3"
+              label="Ảnh 3"
+              disabled={pending}
+              describedBy={state.fieldErrors?.images ? "images-error" : undefined}
+            />
           </div>
           {state.fieldErrors?.images && (
             <p role="alert" id="images-error">
