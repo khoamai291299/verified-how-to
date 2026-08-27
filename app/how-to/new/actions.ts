@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/session";
 import { findOrCreateDish } from "@/lib/supabase/dish";
+import { readHeroImageFile, replaceHeroImage } from "@/lib/supabase/hero-image";
 import type { HowToFormState } from "../how-to-form-types";
 
 export type CreateHowToState = HowToFormState;
@@ -39,6 +40,7 @@ export async function createHowTo(
     }))
     .filter((ing) => ing.name.length > 0);
   const categoryIds = formData.getAll("categoryIds").map((v) => String(v));
+  const { file: heroImageFile, error: heroImageFieldError } = readHeroImageFile(formData);
 
   const fieldErrors: CreateHowToState["fieldErrors"] = {};
   if (!title) {
@@ -52,6 +54,9 @@ export async function createHowTo(
   }
   if (fieldErrors.title || fieldErrors.dish || fieldErrors.steps) {
     return { fieldErrors };
+  }
+  if (heroImageFieldError) {
+    return { error: heroImageFieldError };
   }
 
   const supabase = getServerSupabaseClient();
@@ -115,6 +120,16 @@ export async function createHowTo(
     if (categoryError) {
       // Cũng tùy chọn như nguyên liệu — không chặn luồng chính nếu lưu thất bại.
       console.error("Lỗi gán category:", categoryError);
+    }
+  }
+
+  if (heroImageFile) {
+    const { path, error: uploadError } = await replaceHeroImage(supabase, howTo.id as string, heroImageFile, null);
+    if (uploadError) {
+      // Ảnh minh họa tùy chọn — không hủy toàn bộ How-To nếu tải ảnh thất bại.
+      console.error("Lỗi tải ảnh minh họa lúc tạo:", uploadError);
+    } else if (path) {
+      await supabase.from("how_to").update({ hero_image_path: path }).eq("id", howTo.id);
     }
   }
 

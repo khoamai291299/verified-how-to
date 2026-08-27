@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/session";
+import { HERO_IMAGE_BUCKET } from "@/lib/supabase/hero-image";
 import {
   ALLOWED_IMAGE_MIME_TYPES,
   IMAGE_EXTENSION_BY_MIME,
@@ -236,7 +237,7 @@ export async function deleteHowTo(howToId: string, _prevState: DeleteState, _for
 
   const { data: howTo, error: howToError } = await supabase
     .from("how_to")
-    .select("id, user_id")
+    .select("id, user_id, hero_image_path")
     .eq("id", howToId)
     .maybeSingle();
 
@@ -252,6 +253,14 @@ export async function deleteHowTo(howToId: string, _prevState: DeleteState, _for
   }
   if (howTo.user_id !== user.id) {
     return { error: "Bạn không có quyền xóa Cách làm này." };
+  }
+
+  if (howTo.hero_image_path) {
+    const { error: heroRemoveError } = await supabase.storage.from(HERO_IMAGE_BUCKET).remove([howTo.hero_image_path]);
+    if (heroRemoveError) {
+      console.error("Lỗi xóa ảnh minh họa khỏi Storage:", heroRemoveError);
+      return { error: "Không thể xóa ảnh minh họa. Vui lòng thử lại." };
+    }
   }
 
   const { data: reports, error: reportsError } = await supabase

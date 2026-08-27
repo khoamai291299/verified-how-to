@@ -16,4 +16,6 @@ export type HowToFormInitialValues = {
   ingredients: { name: string; quantity: string; unit: string }[];
   steps: string[];
   categoryIds: string[];
+  /** URL đã ký của ảnh minh họa hiện có (chỉ dùng để xem trước ở form sửa). */
+  heroImageUrl?: string | null;
 };

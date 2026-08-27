@@ -3,9 +3,11 @@ import { notFound, redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/session";
 import { getAllCategories } from "@/lib/supabase/categories";
+import { HERO_IMAGE_BUCKET } from "@/lib/supabase/hero-image";
 import { EditHowToForm } from "./edit-how-to-form";
 
 export const dynamic = "force-dynamic";
+const SIGNED_URL_TTL_SECONDS = 3600;
 
 type EditPageProps = {
   params: Promise<{ id: string }>;
@@ -26,7 +28,7 @@ export default async function EditHowToPage({ params }: EditPageProps) {
 
   const { data: howTo, error: howToError } = await supabase
     .from("how_to")
-    .select("id, title, description, expected_outcome, user_id, dish:dish_id(name)")
+    .select("id, title, description, expected_outcome, user_id, hero_image_path, dish:dish_id(name)")
     .eq("id", id)
     .maybeSingle();
 
@@ -56,6 +58,14 @@ export default async function EditHowToPage({ params }: EditPageProps) {
     getAllCategories(),
   ]);
 
+  let heroImageUrl: string | null = null;
+  if (howTo.hero_image_path) {
+    const { data: signed } = await supabase.storage
+      .from(HERO_IMAGE_BUCKET)
+      .createSignedUrl(howTo.hero_image_path, SIGNED_URL_TTL_SECONDS);
+    heroImageUrl = signed?.signedUrl ?? null;
+  }
+
   return (
     <main>
       <h1>Sửa cách làm</h1>
@@ -75,6 +85,7 @@ export default async function EditHowToPage({ params }: EditPageProps) {
           })),
           steps: (steps ?? []).map((s) => s.instruction),
           categoryIds: (categoryLinks ?? []).map((c) => c.category_id),
+          heroImageUrl,
         }}
       />
     </main>

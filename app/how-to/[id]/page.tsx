@@ -8,6 +8,7 @@ import { SubmitAttemptReportForm } from "./submit-attempt-report-form";
 import { DeleteHowToButton } from "./delete-how-to-button";
 import { DeleteAttemptReportButton } from "./delete-attempt-report-button";
 import { SaveToggleButton } from "@/app/saved/save-toggle-button";
+import { HERO_IMAGE_BUCKET } from "@/lib/supabase/hero-image";
 
 /** Nguyên liệu có cấu trúc — nhóm theo group_name khi có, giữ nguyên thứ tự position. */
 function IngredientList({ ingredients }: { ingredients: HowToIngredient[] }) {
@@ -151,7 +152,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
   const { data: howTo, error: howToError } = await supabase
     .from("how_to")
-    .select("id, title, description, expected_outcome, user_id, dish:dish_id(id, name)")
+    .select("id, title, description, expected_outcome, user_id, hero_image_path, dish:dish_id(id, name)")
     .eq("id", id)
     .maybeSingle();
 
@@ -274,6 +275,14 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
   const isHowToOwner = currentUser !== null && howTo.user_id === currentUser.id;
 
+  let heroImageUrl: string | null = null;
+  if (howTo.hero_image_path) {
+    const { data: signedHero } = await supabase.storage
+      .from(HERO_IMAGE_BUCKET)
+      .createSignedUrl(howTo.hero_image_path, SIGNED_URL_TTL_SECONDS);
+    heroImageUrl = signedHero?.signedUrl ?? null;
+  }
+
   let initiallySaved = false;
   if (currentUser) {
     const { data: savedRow } = await supabase
@@ -305,6 +314,14 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
             )}
           </span>
           <h1>{howTo.title}</h1>
+
+          {heroImageUrl && (
+            <figure className="hero-image">
+              <img src={heroImageUrl} alt={`Minh họa: ${howTo.title}`} />
+              <figcaption>Ảnh minh họa do tác giả cung cấp — không phải ảnh kết quả thật.</figcaption>
+            </figure>
+          )}
+
           {howTo.description && <p className="supporting-text">{howTo.description}</p>}
 
           {categoryTags.length > 0 && (

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/session";
 import { findOrCreateDish } from "@/lib/supabase/dish";
+import { readHeroImageFile, replaceHeroImage } from "@/lib/supabase/hero-image";
 import type { HowToFormState } from "../../how-to-form-types";
 
 export async function updateHowTo(
@@ -20,7 +21,7 @@ export async function updateHowTo(
 
   const { data: existing, error: existingError } = await supabase
     .from("how_to")
-    .select("id, user_id")
+    .select("id, user_id, hero_image_path")
     .eq("id", howToId)
     .maybeSingle();
 
@@ -53,6 +54,7 @@ export async function updateHowTo(
     }))
     .filter((ing) => ing.name.length > 0);
   const categoryIds = formData.getAll("categoryIds").map((v) => String(v));
+  const { file: heroImageFile, error: heroImageFieldError } = readHeroImageFile(formData);
 
   const fieldErrors: HowToFormState["fieldErrors"] = {};
   if (!title) fieldErrors.title = "Vui lòng nhập tiêu đề.";
@@ -60,6 +62,9 @@ export async function updateHowTo(
   if (steps.length === 0) fieldErrors.steps = "Cần ít nhất một bước.";
   if (fieldErrors.title || fieldErrors.dish || fieldErrors.steps) {
     return { fieldErrors };
+  }
+  if (heroImageFieldError) {
+    return { error: heroImageFieldError };
   }
 
   const dish = await findOrCreateDish(supabase, dishName);
@@ -118,6 +123,15 @@ export async function updateHowTo(
     const categoryRows = categoryIds.map((categoryId) => ({ how_to_id: howToId, category_id: categoryId }));
     const { error: categoryError } = await supabase.from("how_to_category").insert(categoryRows);
     if (categoryError) console.error("Lỗi lưu category mới:", categoryError);
+  }
+
+  if (heroImageFile) {
+    const { path, error: uploadError } = await replaceHeroImage(supabase, howToId, heroImageFile, existing.hero_image_path);
+    if (uploadError) {
+      console.error("Lỗi thay ảnh minh họa:", uploadError);
+    } else if (path) {
+      await supabase.from("how_to").update({ hero_image_path: path }).eq("id", howToId);
+    }
   }
 
   redirect(`/how-to/${howToId}`);

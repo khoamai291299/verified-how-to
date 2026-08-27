@@ -231,6 +231,17 @@ export function HowToForm({
         <textarea id="description" name="description" rows={3} defaultValue={initial.description} disabled={pending} />
       </div>
 
+      <div>
+        <label htmlFor="heroImage">Ảnh minh họa (tùy chọn)</label>
+        {initial.heroImageUrl && (
+          <div className="hero-image-preview">
+            <img src={initial.heroImageUrl} alt="Ảnh minh họa hiện tại" />
+            <span className="supporting-text">Chọn ảnh mới bên dưới để thay thế.</span>
+          </div>
+        )}
+        <input id="heroImage" name="heroImage" type="file" accept="image/jpeg,image/png,image/webp" disabled={pending} />
+      </div>
+
       <CategoryFieldset
         categories={categories}
         dimension="loai_mon"

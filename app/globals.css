@@ -1172,6 +1172,41 @@ ul {
   border-color: var(--color-ink-blue);
 }
 
+/* Ảnh minh họa trên trang chi tiết — cố ý KHÔNG dùng chung khung/màu với
+   evidence-ticket (kraft). Chú thích luôn đi kèm để không ai nhầm đây là ảnh
+   kết quả thật — giữ đúng ranh giới Evidence ≠ Truth khi có ảnh tác giả. */
+.hero-image {
+  margin-bottom: var(--space-md);
+}
+
+.hero-image img {
+  display: block;
+  width: 100%;
+  max-height: 22rem;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.hero-image figcaption {
+  font-size: 0.78rem;
+  color: var(--color-ink-soft);
+  margin-top: 0.3rem;
+}
+
+.hero-image-preview {
+  margin-bottom: 0.5rem;
+}
+
+.hero-image-preview img {
+  display: block;
+  width: 100%;
+  max-width: 16rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  margin-bottom: 0.3rem;
+}
+
 .category-fieldset {
   margin-bottom: 1rem;
   border: 1px solid var(--color-border);
