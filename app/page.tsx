@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
-import type { AttemptReportResult } from "@/lib/supabase/types";
+import { getAllCategories } from "@/lib/supabase/categories";
+import { CATEGORY_DIMENSION_LABELS, type AttemptReportResult, type Category } from "@/lib/supabase/types";
 
 // Danh sách How-To thay đổi liên tục — không thể prerender tĩnh lúc build.
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ type HowToCardData = {
 };
 
 type DiscoverPageProps = {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; category?: string }>;
 };
 
 type SearchMatch = {
@@ -83,14 +84,87 @@ async function searchHowToIds(
   return matchByHowToId;
 }
 
+function HowToCardRow({ card, query }: { card: HowToCardData; query: string }) {
+  return (
+    <li>
+      <div className="howto-entry">
+        <div className="specimen" aria-hidden="true">
+          {card.specimenUrl ? (
+            <img src={card.specimenUrl} alt="" className="specimen-image" />
+          ) : (
+            <span className="specimen-empty" />
+          )}
+        </div>
+
+        <div className="howto-entry-main">
+          {card.dishName && card.dishId && (
+            <Link href={`/dish/${card.dishId}`} className="dish-label">
+              {card.dishName}
+            </Link>
+          )}
+          <h2>
+            <Link href={`/how-to/${card.id}`}>{card.title}</Link>
+          </h2>
+          {card.description && <p className="supporting-text">{card.description}</p>}
+          {query && card.matchedIngredients.length > 0 && !card.title.toLowerCase().includes(query.toLowerCase()) && (
+            <p className="match-reason">
+              Khớp vì có {card.matchedIngredients.slice(0, 2).join(", ")}
+              {card.matchedIngredients.length > 2 ? "…" : ""}
+            </p>
+          )}
+        </div>
+
+        <div className="howto-entry-tally">
+          {card.attempts === 0 ? (
+            <p className="tally-empty">Chưa có lượt thử</p>
+          ) : (
+            <>
+              <div className="tally-marks" aria-hidden="true">
+                {card.results.slice(0, MAX_TALLY_MARKS).map((result, i) => (
+                  <span key={i} className="tally-mark" data-result={result} />
+                ))}
+                {card.attempts > MAX_TALLY_MARKS && <span className="tally-overflow">+{card.attempts - MAX_TALLY_MARKS}</span>}
+              </div>
+              <p className="tally-caption">
+                {card.attempts} lần thử{card.evidence > 0 ? ` · ${card.evidence} ảnh kết quả` : ""}
+              </p>
+              <p className="sr-only">
+                {card.results.filter((r) => r === "success").length} thành công ·{" "}
+                {card.results.filter((r) => r === "partial").length} một phần ·{" "}
+                {card.results.filter((r) => r === "failed").length} thất bại
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+}
+
 export default async function DiscoverPage({ searchParams }: DiscoverPageProps) {
-  const { q } = await searchParams;
+  const { q, category: categorySlug } = await searchParams;
   const query = (q ?? "").trim();
   const supabase = getServerSupabaseClient();
+
+  const categories = await getAllCategories();
+  const activeCategory = categorySlug ? (categories.find((c) => c.slug === categorySlug) ?? null) : null;
+
+  const { data: allCategoryLinks } = await supabase.from("how_to_category").select("category_id");
+  const categoryCounts = new Map<string, number>();
+  for (const link of allCategoryLinks ?? []) {
+    categoryCounts.set(link.category_id, (categoryCounts.get(link.category_id) ?? 0) + 1);
+  }
+  const categoriesWithContent = categories.filter((c) => (categoryCounts.get(c.id) ?? 0) > 0);
 
   let searchMatches: Map<string, SearchMatch> | null = null;
   if (query.length > 0) {
     searchMatches = await searchHowToIds(supabase, query);
+  }
+
+  let categoryHowToIds: string[] | null = null;
+  if (activeCategory) {
+    const { data: links } = await supabase.from("how_to_category").select("how_to_id").eq("category_id", activeCategory.id);
+    categoryHowToIds = (links ?? []).map((l) => l.how_to_id);
   }
 
   let howToQuery = supabase
@@ -101,6 +175,9 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   if (searchMatches) {
     const matchedIds = [...searchMatches.keys()];
     howToQuery = howToQuery.in("id", matchedIds.length > 0 ? matchedIds : ["00000000-0000-0000-0000-000000000000"]);
+  }
+  if (categoryHowToIds) {
+    howToQuery = howToQuery.in("id", categoryHowToIds.length > 0 ? categoryHowToIds : ["00000000-0000-0000-0000-000000000000"]);
   }
 
   const { data: howTosRaw, error } = await howToQuery;
@@ -204,6 +281,23 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   const totalAttempts = allResults.length;
   const totalEvidence = cards.reduce((sum, c) => sum + c.evidence, 0);
 
+  // Kệ biên tập "Được thử nhiều nhất" — chỉ xếp theo số lần thử THẬT đã ghi
+  // nhận, không phải mức độ phổ biến bịa đặt. Chỉ hiện ở trạng thái Trang chủ
+  // thật (không tìm kiếm, không lọc category) và khi có ít nhất một Cách làm
+  // đã có người thử — tránh một kệ "nổi bật" toàn số 0.
+  const isBrowsingHome = !query && !activeCategory;
+  const featured = isBrowsingHome
+    ? [...cards]
+        .filter((c) => c.attempts > 0)
+        .sort((a, b) => b.attempts - a.attempts)
+        .slice(0, 3)
+    : [];
+
+  const categoriesByDimension = categoriesWithContent.reduce<Record<string, Category[]>>((acc, c) => {
+    (acc[c.dimension] ??= []).push(c);
+    return acc;
+  }, {});
+
   return (
     <main className="main-list">
       <form role="search" action="/" method="GET" className="search-form">
@@ -231,13 +325,26 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
                 {cards.length === 0
                   ? "Không tìm thấy cách làm nào phù hợp."
                   : `${cards.length} cách làm phù hợp với tên, mô tả, hoặc nguyên liệu bạn tìm.`}
+                {activeCategory && ` trong "${activeCategory.name}"`}
+              </p>
+            </>
+          ) : activeCategory ? (
+            <>
+              <h1>{activeCategory.name}</h1>
+              <p className="supporting-text">
+                {cards.length} cách làm ·{" "}
+                <Link href="/">Bỏ lọc, xem tất cả →</Link>
               </p>
             </>
           ) : (
             <>
-              <h1>Những cách làm đã được người thật thử</h1>
+              <h1>Không chỉ cho bạn biết cách làm</h1>
+              <p className="product-thesis">
+                mà cho bạn biết điều gì đã xảy ra khi người thật thử làm.
+              </p>
               <p className="supporting-text">
-                Mỗi cách làm ở đây đi kèm báo cáo thật từ người đã thử — không chỉ là hướng dẫn lý thuyết.
+                Mỗi cách làm ở đây đi kèm báo cáo thật từ người đã thử: thành công, một phần, hay thất bại — kể cả khi
+                kết quả không như mong đợi.
               </p>
             </>
           )}
@@ -257,10 +364,42 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
         )}
       </section>
 
+      {categoriesWithContent.length > 0 && (
+        <nav className="category-chip-nav" aria-label="Lọc theo phân loại">
+          {Object.entries(categoriesByDimension).map(([dimension, cats]) => (
+            <div className="category-chip-row" key={dimension}>
+              <span className="category-chip-dimension">{CATEGORY_DIMENSION_LABELS[dimension as Category["dimension"]]}</span>
+              <div className="category-chips">
+                {cats.map((c) => (
+                  <Link
+                    key={c.id}
+                    href={`/?category=${c.slug}`}
+                    className={`category-chip${activeCategory?.id === c.id ? " category-chip-active" : ""}`}
+                  >
+                    {c.name} <span className="category-chip-count">{categoryCounts.get(c.id) ?? 0}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+      )}
+
+      {featured.length > 0 && (
+        <section aria-label="Được thử nhiều nhất">
+          <span className="eyebrow">Được thử nhiều nhất</span>
+          <ul className="howto-list howto-list-featured">
+            {featured.map((card) => (
+              <HowToCardRow key={card.id} card={card} query={query} />
+            ))}
+          </ul>
+        </section>
+      )}
+
       {cards.length === 0 ? (
-        query ? (
+        query || activeCategory ? (
           <div>
-            <Link href="/">Xóa tìm kiếm, xem tất cả cách làm →</Link>
+            <Link href="/">Xóa bộ lọc, xem tất cả cách làm →</Link>
           </div>
         ) : (
           <div>
@@ -272,66 +411,24 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           </div>
         )
       ) : (
-        <ul className="howto-list">
-          {cards.map((card) => (
-            <li key={card.id}>
-              <div className="howto-entry">
-                <div className="specimen" aria-hidden="true">
-                  {card.specimenUrl ? (
-                    <img src={card.specimenUrl} alt="" className="specimen-image" />
-                  ) : (
-                    <span className="specimen-empty" />
-                  )}
-                </div>
-
-                <div className="howto-entry-main">
-                  {card.dishName && card.dishId && (
-                    <Link href={`/dish/${card.dishId}`} className="dish-label">
-                      {card.dishName}
-                    </Link>
-                  )}
-                  <h2>
-                    <Link href={`/how-to/${card.id}`}>{card.title}</Link>
-                  </h2>
-                  {card.description && <p className="supporting-text">{card.description}</p>}
-                  {query &&
-                    card.matchedIngredients.length > 0 &&
-                    !card.title.toLowerCase().includes(query.toLowerCase()) && (
-                      <p className="match-reason">
-                        Khớp vì có {card.matchedIngredients.slice(0, 2).join(", ")}
-                        {card.matchedIngredients.length > 2 ? "…" : ""}
-                      </p>
-                    )}
-                </div>
-
-                <div className="howto-entry-tally">
-                  {card.attempts === 0 ? (
-                    <p className="tally-empty">Chưa có lượt thử</p>
-                  ) : (
-                    <>
-                      <div className="tally-marks" aria-hidden="true">
-                        {card.results.slice(0, MAX_TALLY_MARKS).map((result, i) => (
-                          <span key={i} className="tally-mark" data-result={result} />
-                        ))}
-                        {card.attempts > MAX_TALLY_MARKS && (
-                          <span className="tally-overflow">+{card.attempts - MAX_TALLY_MARKS}</span>
-                        )}
-                      </div>
-                      <p className="tally-caption">
-                        {card.attempts} lần thử{card.evidence > 0 ? ` · ${card.evidence} ảnh kết quả` : ""}
-                      </p>
-                      <p className="sr-only">
-                        {card.results.filter((r) => r === "success").length} thành công ·{" "}
-                        {card.results.filter((r) => r === "partial").length} một phần ·{" "}
-                        {card.results.filter((r) => r === "failed").length} thất bại
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+        (() => {
+          // Với kho nội dung nhỏ, lặp lại nguyên các mục trong kệ "Được thử
+          // nhiều nhất" ngay bên dưới trông như trùng lặp, không phải biên
+          // tập — loại các mục đã ở kệ khỏi danh sách còn lại.
+          const featuredIds = new Set(featured.map((c) => c.id));
+          const rest = featured.length > 0 ? cards.filter((c) => !featuredIds.has(c.id)) : cards;
+          if (featured.length > 0 && rest.length === 0) return null;
+          return (
+            <>
+              {featured.length > 0 && <span className="eyebrow">Cách làm khác</span>}
+              <ul className="howto-list">
+                {rest.map((card) => (
+                  <HowToCardRow key={card.id} card={card} query={query} />
+                ))}
+              </ul>
+            </>
+          );
+        })()
       )}
     </main>
   );

@@ -54,3 +54,23 @@ export type HowToIngredient = {
   preparation: string | null;
   is_required: boolean;
 };
+
+/**
+ * Master Prompt #4 — taxonomy khám phá. Hai chiều thật: cách chế biến và vai
+ * trò trong bữa ăn. `dimension` là text có CHECK ở DB, không phải bảng riêng —
+ * đủ cho quy mô này (mục 29 mission: "không tạo một taxonomy khổng lồ").
+ */
+export type CategoryDimension = "phuong_phap" | "loai_mon";
+
+export const CATEGORY_DIMENSION_LABELS: Record<CategoryDimension, string> = {
+  phuong_phap: "Cách chế biến",
+  loai_mon: "Loại món",
+};
+
+export type Category = {
+  id: string;
+  dimension: CategoryDimension;
+  name: string;
+  slug: string;
+  position: number;
+};

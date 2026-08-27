@@ -13,9 +13,13 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   const { redirectTo } = await searchParams;
 
   return (
-    <main>
-      <h1>Đăng nhập</h1>
-      <SignInForm redirectTo={redirectTo} />
+    <main className="auth-main">
+      <div className="auth-card">
+        <span className="eyebrow">Verified How-To</span>
+        <h1>Đăng nhập</h1>
+        <p className="supporting-text">Vào lại để tạo cách làm, chia sẻ kết quả thật, và xem nội dung bạn đã lưu.</p>
+        <SignInForm redirectTo={redirectTo} />
+      </div>
     </main>
   );
 }

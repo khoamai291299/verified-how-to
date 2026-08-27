@@ -152,6 +152,36 @@ main.main-list {
   max-width: var(--list-width);
 }
 
+/* Đăng nhập/Đăng ký — một tấm phiếu trên nền giấy, không phải form trần
+   lơ lửng giữa trang trắng: cùng ngôn ngữ viền/bo góc với evidence-ticket,
+   để trạng thái xác thực đọc như một phần của sản phẩm, không phải màn hình
+   Supabase mặc định. */
+main.auth-main {
+  max-width: 28rem;
+  padding-top: var(--space-xl);
+}
+
+.auth-card {
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: var(--space-lg);
+}
+
+.auth-card form {
+  margin-top: var(--space-md);
+}
+
+.auth-success {
+  border-left: 3px solid var(--color-amber-text);
+  padding-left: var(--space-sm);
+}
+
+.auth-success-title {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
 h1,
 h2,
 p {
@@ -800,6 +830,18 @@ ul {
   line-height: 1.15;
 }
 
+/* Luận điểm sản phẩm — dòng thứ hai của tiêu đề, đọc tiếp câu đầu như một câu
+   duy nhất ("Không chỉ cho bạn biết cách làm / mà cho bạn biết điều gì đã xảy
+   ra..."). Kraft, không phải ink — đây là câu về TRẢI NGHIỆM THẬT, cùng ngôn
+   ngữ màu với evidence-rail, không phải một dòng phụ đề trung tính. */
+.product-thesis {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: clamp(1rem, 0.85rem + 0.6vw, 1.15rem);
+  color: var(--color-amber-text);
+  margin-top: 0.15rem;
+  margin-bottom: var(--space-sm);
+}
+
 .hero-evidence {
   flex: 0 0 auto;
   max-width: 12rem;
@@ -841,9 +883,86 @@ ul {
   text-align: right;
 }
 
+/* Chip lọc category — chữ + số đếm thật, không phải huy hiệu màu mè. Đứng
+   thành hàng theo từng chiều phân loại, mỗi chiều có nhãn nhỏ đứng trước. */
+.category-chip-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: var(--space-lg);
+}
+
+.category-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.category-chip-dimension {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-soft);
+  flex: 0 0 auto;
+  min-width: 6.5rem;
+}
+
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.category-chip:hover,
+.category-chip:focus-visible {
+  border-color: var(--color-ink-blue);
+  color: var(--color-ink-blue);
+}
+
+.category-chip-active {
+  background: var(--color-ink-blue);
+  border-color: var(--color-ink-blue);
+  color: #fff;
+}
+
+.category-chip-count {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
 .howto-list {
   display: flex;
   flex-direction: column;
+}
+
+/* Kệ biên tập "Được thử nhiều nhất" — cùng markup .howto-entry với danh sách
+   đầy đủ bên dưới (không phải một loại thẻ khác), chỉ khác viền ngoài kraft
+   mảnh để đọc như một mục lựa chọn, không phải một bảng dữ liệu khác. */
+.howto-list-featured {
+  border: 1px solid var(--color-kraft-border);
+  border-radius: 4px;
+  padding: 0 var(--space-md);
+  margin-bottom: var(--space-lg);
+  background: var(--color-paper-raised);
+}
+
+.howto-list-featured .howto-entry:first-child {
+  border-top: none;
 }
 
 .howto-entry {
@@ -1013,6 +1132,74 @@ ul {
   border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.secondary-link {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-ink-blue);
+}
+
+/* Category — thẻ chữ, không phải huy hiệu màu: đây là sự thật phân loại tra
+   cứu được (thuộc chiều "cách chế biến"/"loại món" thật), không phải một xác
+   nhận chất lượng, nên không dùng ngôn ngữ thị giác của badge/trust mark. */
+.category-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  list-style: none;
+  margin-bottom: var(--space-md);
+}
+
+.category-tag {
+  display: inline-block;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+}
+
+.category-tag:hover,
+.category-tag:focus-visible {
+  color: var(--color-ink-blue);
+  border-color: var(--color-ink-blue);
+}
+
+.category-fieldset {
+  margin-bottom: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.75rem 0.9rem;
+}
+
+.category-fieldset legend {
+  font-size: 0.85rem;
+  padding: 0 0.3rem;
+}
+
+.category-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+}
+
+.category-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+  font-size: 0.92rem;
+}
+
+.category-checkbox input {
+  width: auto;
 }
 
 .save-action {
@@ -1027,23 +1214,23 @@ ul {
   margin-top: 0.25rem;
 }
 
-.profile-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-lg);
-  margin: var(--space-md) 0 var(--space-lg);
+.profile-list {
+  list-style: none;
+  margin-bottom: var(--space-md);
 }
 
-.profile-stats dt {
-  font-size: 0.85rem;
+.profile-list li {
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.profile-list li:last-child {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-list-meta {
   color: var(--color-ink-soft);
-  margin-bottom: 0.15rem;
-}
-
-.profile-stats dd {
-  font-size: 1.75rem;
-  font-weight: 700;
-  font-family: var(--font-mono), monospace;
+  font-size: 0.9rem;
 }
 
 .outcome-stats {

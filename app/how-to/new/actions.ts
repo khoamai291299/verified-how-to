@@ -3,31 +3,10 @@
 import { redirect } from "next/navigation";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/supabase/session";
+import { findOrCreateDish } from "@/lib/supabase/dish";
+import type { HowToFormState } from "../how-to-form-types";
 
-export type CreateHowToState = {
-  error?: string;
-  fieldErrors?: {
-    title?: string;
-    dish?: string;
-    steps?: string;
-  };
-};
-
-/** Tìm Dish theo tên (không phân biệt hoa/thường, đã trim); tạo mới nếu chưa có. */
-async function findOrCreateDish(
-  supabase: ReturnType<typeof getServerSupabaseClient>,
-  name: string,
-): Promise<{ id: string } | null> {
-  const { data: existing } = await supabase.from("dish").select("id").ilike("name", name).maybeSingle();
-  if (existing) return existing;
-
-  const { data: created, error } = await supabase.from("dish").insert({ name }).select("id").single();
-  if (error) {
-    console.error("Lỗi tạo dish:", error);
-    return null;
-  }
-  return created;
-}
+export type CreateHowToState = HowToFormState;
 
 export async function createHowTo(
   _prevState: CreateHowToState,
@@ -59,6 +38,7 @@ export async function createHowTo(
       unit: ingredientUnits[i] || null,
     }))
     .filter((ing) => ing.name.length > 0);
+  const categoryIds = formData.getAll("categoryIds").map((v) => String(v));
 
   const fieldErrors: CreateHowToState["fieldErrors"] = {};
   if (!title) {
@@ -126,6 +106,15 @@ export async function createHowTo(
       // Nguyên liệu là tùy chọn ở form tạo — không hủy toàn bộ How-To nếu lưu
       // nguyên liệu thất bại, chỉ ghi log để không chặn luồng chính.
       console.error("Lỗi tạo how_to_ingredient:", ingredientsError);
+    }
+  }
+
+  if (categoryIds.length > 0) {
+    const categoryRows = categoryIds.map((categoryId) => ({ how_to_id: howTo.id as string, category_id: categoryId }));
+    const { error: categoryError } = await supabase.from("how_to_category").insert(categoryRows);
+    if (categoryError) {
+      // Cũng tùy chọn như nguyên liệu — không chặn luồng chính nếu lưu thất bại.
+      console.error("Lỗi gán category:", categoryError);
     }
   }
 

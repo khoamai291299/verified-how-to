@@ -11,9 +11,13 @@ export function SignUpForm() {
 
   if (state.confirmationRequired) {
     return (
-      <p role="status">
-        Đã gửi email xác nhận. Vui lòng kiểm tra hộp thư và bấm vào liên kết xác nhận trước khi đăng nhập.
-      </p>
+      <div className="auth-success" role="status">
+        <p className="auth-success-title">Kiểm tra hộp thư của bạn</p>
+        <p className="supporting-text">
+          VHKP đã gửi một email xác nhận. Bấm vào liên kết trong email đó để kích hoạt tài khoản, sau đó quay lại{" "}
+          <Link href="/sign-in">đăng nhập</Link>.
+        </p>
+      </div>
     );
   }
 

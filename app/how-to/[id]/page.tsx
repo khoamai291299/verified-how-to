@@ -172,6 +172,17 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
   // dish_id là quan hệ nhiều-một — chuẩn hóa về một object (hoặc null) ở đây.
   const dish = Array.isArray(howTo.dish) ? (howTo.dish[0] ?? null) : (howTo.dish ?? null);
 
+  const { data: categoryLinks } = await supabase
+    .from("how_to_category")
+    .select("category:category_id(id, name, slug)")
+    .eq("how_to_id", id);
+  const categoryTags = (categoryLinks ?? [])
+    .map((row) => {
+      const c = Array.isArray(row.category) ? (row.category[0] ?? null) : (row.category ?? null);
+      return c;
+    })
+    .filter((c): c is { id: string; name: string; slug: string } => c !== null);
+
   const { data: steps, error: stepsError } = await supabase
     .from("how_to_step")
     .select("id, instruction")
@@ -296,6 +307,18 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           <h1>{howTo.title}</h1>
           {howTo.description && <p className="supporting-text">{howTo.description}</p>}
 
+          {categoryTags.length > 0 && (
+            <ul className="category-tags">
+              {categoryTags.map((c) => (
+                <li key={c.id}>
+                  <Link href={`/?category=${c.slug}`} className="category-tag">
+                    {c.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+
           {currentUser && (
             <div className="save-action">
               <SaveToggleButton howToId={id} initiallySaved={initiallySaved} />
@@ -327,6 +350,11 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           )}
 
           <div className="detail-actions">
+            {isHowToOwner && (
+              <Link href={`/how-to/${id}/edit`} className="secondary-link">
+                Sửa cách làm
+              </Link>
+            )}
             <DeleteHowToButton howToId={id} attemptReportCount={reportViews.length} isOwner={isHowToOwner} />
           </div>
         </div>
