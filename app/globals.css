@@ -22,6 +22,7 @@
   --radius: 6px;
 
   --content-width: 40rem;
+  --list-width: 52rem;
   --detail-width: 68rem;
   --rail-width: 21rem;
 }
@@ -112,6 +113,10 @@ main {
 
 main.main-detail {
   max-width: var(--detail-width);
+}
+
+main.main-list {
+  max-width: var(--list-width);
 }
 
 h1,
@@ -558,7 +563,6 @@ ul {
   font-size: 0.85rem;
   color: var(--color-ink-soft);
   margin-bottom: 0.2rem;
-  white-space: nowrap;
 }
 
 .card-footer {
@@ -617,8 +621,11 @@ ul {
   gap: var(--space-sm);
 }
 
+/* Luôn xếp dọc, không xếp cạnh nhau: form này sống trong evidence-rail, cố định
+   hẹp (~21rem) ngay cả trên desktop — 2-3 input file chung hàng luôn ép input
+   gốc của trình duyệt quá hẹp, khiến "Choose File / No file chosen" bị cắt chữ. */
 .evidence-upload-group > div {
-  flex: 1 1 8rem;
+  flex: 1 1 100%;
 }
 
 .evidence-upload-group label {

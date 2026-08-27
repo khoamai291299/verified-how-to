@@ -26,7 +26,7 @@ export default async function DiscoverPage() {
   if (error) {
     console.error("Lỗi tải danh sách Cách làm:", error);
     return (
-      <main>
+      <main className="main-list">
         <h1>Khám phá</h1>
         <p role="alert">Không thể tải danh sách Cách làm. Vui lòng thử lại sau.</p>
       </main>
@@ -69,7 +69,7 @@ export default async function DiscoverPage() {
   });
 
   return (
-    <main>
+    <main className="main-list">
       <section className="hero">
         <h1>Những cách làm đã được người thật thử</h1>
         <p className="supporting-text">
