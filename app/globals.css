@@ -449,6 +449,11 @@ legend {
   padding: 0;
 }
 
+.field-hint {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+}
+
 input,
 textarea {
   width: 100%;
@@ -699,6 +704,33 @@ ul {
 
 .step-row input {
   flex: 1;
+}
+
+/* Nhập nguyên liệu tự nhiên — bước đề xuất trước khi vào danh sách có cấu
+   trúc bên dưới, người dùng luôn xem lại/sửa trước khi đăng. */
+.ingredient-parser {
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md) var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.ingredient-parser label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-ink-soft);
+}
+
+.ingredient-parser textarea {
+  margin-bottom: 0.6rem;
+}
+
+.parse-notice {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-moss);
+  font-weight: 500;
 }
 
 .ingredient-row {
@@ -1191,6 +1223,89 @@ ul {
    HOW-TO LIST — mục lục sổ tay, mẫu vật ảnh làm điểm neo thị giác thật.
    ========================================================================= */
 
+/* "Chuyện xảy ra khi thử" — tín hiệu sản phẩm mạnh nhất: một ghi chú thật của
+   người đã thử, đọc như một mẩu chuyện ngắn, không phải số liệu tổng hợp. */
+.story-section {
+  margin-bottom: var(--space-xl);
+}
+
+.story-grid {
+  display: grid;
+  gap: var(--space-md);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .story-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.story-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-paper-raised);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.story-card:hover,
+.story-card:focus-visible {
+  border-color: var(--color-kraft);
+  box-shadow: 0 2px 10px rgba(31, 28, 22, 0.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-card {
+    transition: none;
+  }
+}
+
+.story-image {
+  width: 100%;
+  height: 11rem;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.story-result {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.story-result[data-result="success"] {
+  color: var(--color-moss);
+}
+
+.story-result[data-result="partial"] {
+  color: var(--color-amber);
+}
+
+.story-result[data-result="failed"] {
+  color: var(--color-brick);
+}
+
+.story-note {
+  font-size: 1.05rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--color-ink);
+}
+
+.story-source {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: var(--color-ink-faint);
+}
+
 .howto-list {
   display: flex;
   flex-direction: column;
@@ -1441,9 +1556,11 @@ ul {
 .hero-image img {
   display: block;
   width: 100%;
+  aspect-ratio: 16 / 9;
   max-height: 26rem;
   object-fit: cover;
   border-radius: var(--radius-lg);
+  background: var(--color-paper-deep);
 }
 
 .hero-image figcaption {

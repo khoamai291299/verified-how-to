@@ -139,15 +139,20 @@ export default async function DishPage({ params }: DishPageProps) {
           <span className="eyebrow">Món</span>
           <h1>{dish.name}</h1>
           <p className="supporting-text">
-            {cards.length} cách làm{totalAttempts > 0 ? ` · ${totalAttempts} lần thử thật` : ""}
+            {cards.length === 0 && "Chưa có cách làm nào"}
+            {cards.length === 1 && "1 cách làm"}
+            {cards.length > 1 && `${cards.length} cách làm khác nhau để bạn so sánh`}
+            {totalAttempts > 0 ? ` · ${totalAttempts} lần thử thật` : ""}
           </p>
         </div>
       </section>
 
       {cards.length === 0 ? (
-        <p className="supporting-text">Chưa có Cách làm nào cho món này.</p>
+        <p className="supporting-text">Chưa có Cách làm nào cho món này. Hãy là người đầu tiên chia sẻ.</p>
       ) : (
-        <ul className="howto-list">
+        <>
+          {cards.length > 1 && <span className="eyebrow">So sánh các cách làm</span>}
+          <ul className="howto-list">
           {cards.map((card) => (
             <li key={card.id}>
               <div className="howto-entry">
@@ -188,7 +193,8 @@ export default async function DishPage({ params }: DishPageProps) {
               </div>
             </li>
           ))}
-        </ul>
+          </ul>
+        </>
       )}
     </main>
   );

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getServerSupabaseClient } from "@/lib/supabase/server";
 import { getAllCategories } from "@/lib/supabase/categories";
-import { CATEGORY_DIMENSION_LABELS, type AttemptReportResult, type Category } from "@/lib/supabase/types";
+import { CATEGORY_DIMENSION_LABELS, RESULT_LABELS, type AttemptReportResult, type Category } from "@/lib/supabase/types";
 
 // Danh sách How-To thay đổi liên tục — không thể prerender tĩnh lúc build.
 export const dynamic = "force-dynamic";
@@ -203,7 +203,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
   const { data: reports } = howToIds.length
     ? await supabase
         .from("attempt_report")
-        .select("id, how_to_id, result, submitted_at")
+        .select("id, how_to_id, result, submitted_at, note")
         .in("how_to_id", howToIds)
         .order("submitted_at", { ascending: false })
     : { data: [] };
@@ -297,6 +297,33 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
     (acc[c.dimension] ??= []).push(c);
     return acc;
   }, {});
+
+  // "Chuyện xảy ra khi thử" — tín hiệu về sản phẩm mạnh nhất: một ghi chú thật
+  // của người đã thử, không phải một số liệu tổng hợp. Chỉ hiện ở Trang chủ
+  // gốc (không tìm kiếm/lọc), ưu tiên ghi chú có ảnh, mới nhất trước.
+  const cardById = new Map(cards.map((c) => [c.id, c]));
+  const stories = isBrowsingHome
+    ? (reports ?? [])
+        .filter((r) => (r.note ?? "").trim().length > 0)
+        .map((r) => {
+          const card = cardById.get(r.how_to_id);
+          if (!card) return null;
+          const imagePath = firstImagePathByReportId.get(r.id);
+          return {
+            reportId: r.id,
+            howToId: r.how_to_id,
+            howToTitle: card.title,
+            dishName: card.dishName,
+            result: r.result as AttemptReportResult,
+            note: r.note as string,
+            submittedAt: r.submitted_at as string,
+            imageUrl: imagePath ? (specimenUrlByPath.get(imagePath) ?? null) : null,
+          };
+        })
+        .filter((s): s is NonNullable<typeof s> => s !== null)
+        .sort((a, b) => (b.imageUrl ? 1 : 0) - (a.imageUrl ? 1 : 0))
+        .slice(0, 2)
+    : [];
 
   return (
     <main className="main-list">
@@ -393,6 +420,31 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
               <HowToCardRow key={card.id} card={card} query={query} />
             ))}
           </ul>
+        </section>
+      )}
+
+      {stories.length > 0 && (
+        <section aria-label="Chuyện xảy ra khi thử" className="story-section">
+          <span className="eyebrow">Chuyện xảy ra khi thử</span>
+          <div className="story-grid">
+            {stories.map((s) => (
+              <Link key={s.reportId} href={`/how-to/${s.howToId}`} className="story-card">
+                {s.imageUrl && <img src={s.imageUrl} alt="" className="story-image" />}
+                <div className="story-body">
+                  <p className="story-result" data-result={s.result}>
+                    {RESULT_LABELS[s.result]}
+                  </p>
+                  <p className="story-note">“{s.note}”</p>
+                  <p className="story-source">
+                    {s.dishName && !s.howToTitle.toLowerCase().includes(s.dishName.toLowerCase())
+                      ? `${s.dishName} · `
+                      : ""}
+                    {s.howToTitle}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 
