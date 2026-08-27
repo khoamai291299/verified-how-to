@@ -95,6 +95,47 @@ Auth (email/mật khẩu). Không có bảng "profile" riêng — tên hiển th
 Collection (được nêu trong yêu cầu mở rộng sản phẩm rộng hơn) chưa triển khai,
 để dành cho round kế tiếp.
 
+### 2.5. Master Prompt #4 — Categories, Edit, ảnh minh họa, Home biên tập (2026-08-28)
+
+**[QUYẾT ĐỊNH MỚI]** Thay thế các mục "cố ý hoãn lại" tương ứng ở mục 4 gốc
+(giữ nguyên bên dưới làm hồ sơ, đã gạch chú thích trạng thái mới):
+
+- **Category** — hai chiều thật (`phuong_phap`: Chiên/Luộc/Pha chế;
+  `loai_mon`: Món chính/Món phụ/Ăn vặt & Gia vị/Đồ uống), một bảng
+  `category` + bảng nối `how_to_category`, KHÔNG có bảng "dimension" riêng
+  (một cột text đủ ở quy mô 2 chiều × ~4 giá trị/chiều). 7 How-To hiện có
+  được gán category thật dựa trên nội dung thật (vd: Bánh xèo → Chiên +
+  Món chính), không suy diễn/tạo dữ liệu giả. Lọc theo category là một tham
+  số bổ sung cho cùng route Discover/Search (`/?category=slug`), không phải
+  một trang riêng.
+- **Sửa How-To** — chủ sở hữu thật (`user_id` khớp) có thể sửa toàn bộ nội
+  dung: món, tiêu đề, mô tả, nguyên liệu, bước, kết quả mong đợi, category,
+  ảnh minh họa. Cùng luật ủy quyền với xóa: nội dung không chủ (dữ liệu
+  founder trước khi có tài khoản) không sửa được qua UI, kể cả bởi chính
+  founder nếu đăng nhập tài khoản mới. Form Sửa dùng chung component với
+  form Tạo (`app/how-to/how-to-form.tsx`) — không viết lại hai lần.
+- **Ảnh minh họa tác giả** (`how_to.hero_image_path`, bucket riêng
+  `how-to-hero-images`) — CỐ Ý tách biệt hoàn toàn khỏi
+  `attempt_report_image` cả ở storage lẫn UI (chú thích tường minh "không
+  phải ảnh kết quả thật" khi hiển thị). Đây là ranh giới trực tiếp bảo vệ
+  nguyên tắc Evidence ≠ Truth: nếu ảnh tác giả và ảnh kết quả thật dùng
+  chung một khái niệm hiển thị, danh sách Khám phá sẽ trông "đã được chứng
+  minh" trước khi có ai thật sự thử. Vì lý do này, ảnh minh họa **chỉ hiện
+  trên trang chi tiết How-To ở vòng này** — KHÔNG dùng làm ảnh mẫu vật
+  (specimen) trên Khám phá/Dish, nơi ảnh mẫu vật tiếp tục chỉ đến từ ảnh
+  bằng chứng thật. Đây là quyết định thiết kế có cân nhắc, không phải thiếu
+  sót — mở rộng ảnh minh họa lên danh sách cần một lượt thiết kế riêng để
+  không làm mờ tín hiệu "chưa ai thử".
+- **Home biên tập** — kệ "Được thử nhiều nhất" xếp theo số lần thử THẬT
+  (không phải độ phổ biến bịa đặt), chỉ hiện khi ở trạng thái Trang chủ gốc
+  (không tìm kiếm, không lọc category) và có ít nhất một How-To đã có người
+  thử. Danh sách đầy đủ bên dưới loại bỏ các mục đã ở kệ để tránh trùng lặp
+  thị giác trên một kho nội dung nhỏ.
+- **Discover = Search** — không tạo route `/search` riêng. Một route
+  (`/`) xử lý cả duyệt và tìm kiếm bằng query param `q` (đã có từ Search
+  V1) cộng `category` (mới) — tránh phân mảnh trải nghiệm khám phá thành
+  nhiều trang gần giống nhau.
+
 ## 3. Điều KHÔNG thay đổi
 
 - **Evidence ≠ Truth** vẫn là nguyên tắc thiết kế cao nhất (`design-direction.md`
@@ -112,22 +153,21 @@ Theo đúng nguyên tắc "kiến trúc nhỏ nhất đủ mạnh để phát tr
 phải viết lại lần nữa" của Product Evolution V1, các phần sau **cố ý chưa
 triển khai** ở V1 này (không phải bị quên):
 
-- **Category/taxonomy đa chiều** (bữa ăn, dịp, phong cách, loại món, ẩm thực)
-  — chưa cần thiết cho Search V1 hoạt động; thêm sau khi có đủ nội dung thật
-  để taxonomy có ý nghĩa.
+- ~~Category/taxonomy~~ — **đã triển khai ở mục 2.5** (Master Prompt #4).
 - **Ingredient catalog toàn cục/canonical** (chuẩn hóa "trứng gà" ở nhiều
   How-To thành một Ingredient dùng chung) — `how_to_ingredient` hiện tại là
   dữ liệu cấu trúc nhưng phạm vi theo từng How-To, không phải một graph
   nguyên liệu toàn cục. Việc này đủ để Search V1 tìm theo tên nguyên liệu.
-- **Media của tác giả** (hero image, step image/video) — mô hình Evidence
-  media (ảnh người dùng gửi kèm Attempt) không đổi; ảnh minh họa do tác giả
-  How-To cung cấp chưa được triển khai ở V1 này.
-- **Discover biên tập** (mục "được thử nhiều nhất", collection theo mùa...)
-  — Discover V1 vẫn là danh sách, có thêm ô tìm kiếm.
-- **Sửa How-To sau khi đăng** — chủ sở hữu hiện chỉ có thể xóa, chưa sửa nội
-  dung. Xóa rồi đăng lại là cách xử lý tạm thời.
+  Vẫn hoãn.
+- ~~Media của tác giả (hero image)~~ — **đã triển khai ở mục 2.5**, phạm vi
+  trang chi tiết. Step image/video vẫn hoãn.
+- **Discover biên tập nâng cao** (collection theo mùa, "mới được thử",...)
+  — kệ "Được thử nhiều nhất" đã có (mục 2.5); các kệ biên tập khác cần
+  nhiều nội dung thật hơn để có ý nghĩa.
+- ~~Sửa How-To sau khi đăng~~ — **đã triển khai ở mục 2.5**.
 - **Collection do người dùng tự tạo** (khác với `saved_how_to`, vốn chỉ là một
   danh sách lưu phẳng của cá nhân, không có tên/mô tả/chia sẻ công khai).
+  Vẫn hoãn.
 
 ## 5. Ghi chú migration
 
