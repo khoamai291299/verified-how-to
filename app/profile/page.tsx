@@ -19,6 +19,7 @@ export default async function ProfilePage() {
   }
 
   const displayName = (user.user_metadata as { display_name?: string } | undefined)?.display_name ?? user.email ?? "";
+  const avatarInitial = displayName.trim().charAt(0).toUpperCase() || "?";
 
   const supabase = getServerSupabaseClient();
 
@@ -42,14 +43,29 @@ export default async function ProfilePage() {
   });
 
   return (
-    <main>
-      <span className="eyebrow">Sổ tay của bạn</span>
-      <h1>{displayName}</h1>
-      <p className="supporting-text">{user.email}</p>
+    <main className="main-list">
+      <div className="profile-header">
+        <span className="profile-avatar" aria-hidden="true">
+          {avatarInitial}
+        </span>
+        <div>
+          <span className="eyebrow">Sổ tay của bạn</span>
+          <h1>{displayName}</h1>
+          <p className="supporting-text">{user.email}</p>
+        </div>
+      </div>
 
-      <p>
-        <Link href="/saved">Xem {savedCount ?? 0} Cách làm đã lưu →</Link>
-      </p>
+      <div className="profile-stats">
+        <span className="profile-stat">
+          <strong>{(myHowTos ?? []).length}</strong> cách làm đã tạo
+        </span>
+        <span className="profile-stat">
+          <strong>{attemptRows.length}</strong> lần thử đã chia sẻ
+        </span>
+        <Link href="/saved" className="profile-stat">
+          <strong>{savedCount ?? 0}</strong> đã lưu →
+        </Link>
+      </div>
 
       <hr className="section-divider" />
 

@@ -1898,6 +1898,51 @@ ul {
   margin-top: 0.25rem;
 }
 
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.profile-avatar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-ember);
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.profile-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.profile-stat {
+  font-size: 0.92rem;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+}
+
+a.profile-stat:hover,
+a.profile-stat:focus-visible {
+  color: var(--color-ember-deep);
+  text-decoration: underline;
+}
+
+.profile-stat strong {
+  color: var(--color-ink);
+  font-size: 1.1rem;
+}
+
 .profile-list {
   list-style: none;
   margin-bottom: var(--space-md);
