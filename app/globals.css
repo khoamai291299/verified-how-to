@@ -391,12 +391,59 @@ main.auth-main {
   padding-top: var(--space-2xl);
 }
 
+.auth-layout {
+  display: contents;
+}
+
+.auth-branding {
+  display: none;
+}
+
 .auth-card {
   background: var(--color-paper-raised);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   box-shadow: 0 1px 2px rgba(31, 28, 22, 0.04);
+}
+
+/* Ở màn hình đủ rộng, khung xác thực mở thành hai cột thay vì một thẻ trắng
+   nổi giữa nền trống — cột trái nhắc lại đúng thông điệp sản phẩm ở trang
+   chủ, để đăng nhập/đăng ký vẫn cảm thấy là Verified How-To, không phải một
+   form Supabase Auth mặc định. */
+@media (min-width: 900px) {
+  main.auth-main {
+    max-width: 64rem;
+    padding-top: var(--space-2xl);
+  }
+
+  .auth-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: var(--space-2xl);
+    align-items: center;
+  }
+
+  .auth-branding {
+    display: block;
+  }
+
+  .auth-branding .eyebrow {
+    color: var(--color-ember);
+  }
+
+  .auth-branding-quote {
+    font-size: 1.9rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    margin: var(--space-sm) 0 var(--space-md);
+  }
+
+  .auth-branding-sub {
+    max-width: 30rem;
+    color: var(--color-ink-soft);
+  }
 }
 
 .auth-card form {
@@ -598,6 +645,13 @@ button.subtle:hover {
 }
 
 dialog.confirm-dialog {
+  /* Reset toàn cục (`* { margin: 0 }`) vô hiệu hóa margin:auto mặc định của
+     trình duyệt cho <dialog>, khiến hộp thoại dạt về góc trên-trái thay vì
+     giữa màn hình — tự căn giữa tường minh bằng position:fixed + transform. */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   max-width: 24rem;
   width: calc(100% - 2rem);
   border: none;

@@ -29,8 +29,8 @@ export function DeleteHowToButton({
 
   return (
     <ConfirmDeleteDialog
-      triggerLabel="Xóa Cách làm"
-      title="Xóa Cách làm?"
+      triggerLabel="Xóa cách làm"
+      title="Xóa cách làm?"
       message={message}
       confirmLabel="Xóa vĩnh viễn"
       pending={pending}
