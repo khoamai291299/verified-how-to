@@ -105,6 +105,16 @@ lỗi), nhưng độ trễ này đủ dài để một người dùng thật ngh
 trong phạm vi audit thị giác — cần điều tra riêng (cold start Fluid Compute, hay số lượt
 gọi Supabase khi revalidate trang chủ sau đăng nhập).
 
+Ngoài ra: `/how-to/<uuid-không-tồn-tại>` trả **HTTP 200** thay vì 404 (đã xác nhận cả ở
+dev lẫn production qua header thật, không suy đoán) — đây không phải bug bỏ sót mà là
+trade-off đã tài liệu hóa của chính phiên bản Next.js dự án đang dùng (xem
+`node_modules/next/dist/docs/.../not-found.md`: một khi response đã bắt đầu stream, status
+code không đổi được nữa; framework tự thêm `<meta name="robots" content="noindex">` để
+bù — đã xác nhận thẻ này có mặt trên production). Muốn có status 404 thật cần chuyển việc
+kiểm tra tồn tại lên `proxy` (chạy trước khi stream bắt đầu), đổi lại là thêm một lượt
+query Supabase cho mọi request tới route động — đánh đổi hiệu năng cần founder cân nhắc,
+không tự quyết trong vòng audit này.
+
 ## 4. Điểm số các màn hình chính
 
 Thang 1-10. Không chấm cao giả tạo — xem cột "Điểm yếu nhất" cho lý do cụ thể.
