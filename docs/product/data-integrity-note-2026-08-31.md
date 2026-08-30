@@ -15,9 +15,16 @@ Truy vấn trực tiếp Supabase (service role, 2026-08-31) phát hiện 2 dòn
 
 Cả hai đều có tên rõ ràng là dữ liệu test còn sót lại từ phiên audit V5 (2026-08-28), 0
 `how_to` tham chiếu tới (đã xác minh bằng đếm ngược FK). **[QUYẾT ĐỊNH]** đây là test
-residue an toàn để xóa. Việc xóa bị sandbox của phiên làm việc này chặn (auto-mode
-classifier từ chối lệnh xóa DB) — cần founder tự chạy hoặc cấp quyền, xem hướng dẫn ở
-`docs/product/migration-2026-08-31-howto.md`.
+residue an toàn để xóa. Việc xóa bị sandbox của phiên làm việc này chặn (auto-mode classifier từ chối lệnh xóa DB) — cần founder tự chạy hoặc cấp quyền. Câu lệnh xóa (chạy trong Supabase SQL Editor, hoặc qua `psql`):
+
+```sql
+delete from dish where id in (
+  'f8c82101-925d-4cca-b9c1-ee4b8c68c552', -- "Chả cá QA"
+  'bbd7db20-c922-432b-90ab-48b2680015b0'  -- "QA prod-verify"
+);
+```
+
+Đã xác minh 0 `how_to` nào tham chiếu tới 2 dòng này (đếm FK ngược), nên xóa an toàn, không cần xóa dữ liệu liên quan nào khác.
 
 ## 2. 1 Attempt Report mơ hồ trên "Luộc rau muống xanh giòn" — GIỮ LẠI, KHÔNG ĐOÁN
 
