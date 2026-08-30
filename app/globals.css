@@ -416,7 +416,7 @@ main.auth-main {
   border: 1px solid var(--color-line);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
-  box-shadow: 0 1px 2px rgba(31, 28, 22, 0.04);
+  box-shadow: var(--shadow-md);
 }
 
 /* Ở màn hình đủ rộng, khung xác thực mở thành hai cột thay vì một thẻ trắng
@@ -1533,6 +1533,7 @@ ul {
   overflow: hidden;
   background: var(--color-paper-raised);
   border: 1px solid var(--color-line);
+  box-shadow: var(--shadow-sm);
   transition: box-shadow 0.16s ease, transform 0.16s ease;
 }
 
@@ -1546,7 +1547,7 @@ ul {
 
 .featured-card:hover,
 .featured-card:has(.featured-card-stretched-link:focus-visible) {
-  box-shadow: 0 10px 24px rgba(23, 20, 15, 0.1);
+  box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
 }
 
@@ -1609,16 +1610,31 @@ ul {
 }
 
 .howto-entry {
-  padding: var(--space-md) 0;
-  border-top: 1px solid var(--color-line-soft);
+  padding: var(--space-md);
+  margin-bottom: var(--space-sm);
+  border-radius: var(--radius-lg);
+  background: var(--color-paper-raised);
+  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: var(--space-md);
+  transition: box-shadow 0.16s ease;
 }
 
 .howto-list li:last-child .howto-entry {
-  border-bottom: 1px solid var(--color-line-soft);
+  margin-bottom: 0;
+}
+
+.howto-entry:hover,
+.howto-entry:has(a:focus-visible) {
+  box-shadow: var(--shadow-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .howto-entry {
+    transition: none;
+  }
 }
 
 /* Mẫu vật — ảnh bằng chứng gần nhất; đủ lớn để là một điểm neo thị giác thật,
