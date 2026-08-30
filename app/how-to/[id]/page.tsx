@@ -74,6 +74,7 @@ type AttemptReportView = {
   note: string | null;
   submitted_at: string;
   user_id: string | null;
+  is_seed_content: boolean;
   images: AttemptReportImageView[];
 };
 
@@ -104,6 +105,7 @@ function EvidenceTicketItem({
             <p className="evidence-result" data-result={report.result}>
               {RESULT_LABELS[report.result]}
             </p>
+            {report.is_seed_content && <p className="evidence-seed-badge">Nội dung minh họa</p>}
           </div>
           <div className="field-note-body">
             {report.images.length > 0 && (
@@ -208,7 +210,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
   const { data: reports, error: reportsError } = await supabase
     .from("attempt_report")
-    .select("id, result, note, submitted_at, user_id")
+    .select("id, result, note, submitted_at, user_id, is_seed_content")
     .eq("how_to_id", id)
     .order("submitted_at", { ascending: false });
 
@@ -264,6 +266,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
     note: report.note,
     submitted_at: report.submitted_at,
     user_id: report.user_id,
+    is_seed_content: report.is_seed_content,
     images: imagesByReportId.get(report.id) ?? [],
   }));
 

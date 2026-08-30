@@ -1066,6 +1066,13 @@ ul {
   color: var(--color-brick);
 }
 
+.evidence-seed-badge {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.68rem;
+  color: var(--color-ink-faint);
+  margin-top: 0.2rem;
+}
+
 .evidence-note {
   overflow: hidden;
   margin-top: 0.3rem;
