@@ -67,6 +67,18 @@
   --radius-md: 10px;
   --radius-lg: 18px;
 
+  /* ---- Elevation: chưa từng có token nào trước bản V6 — mọi card chỉ phân
+     biệt bằng viền 1px, khiến trang phẳng đều như nhau. Dùng tông ink ấm
+     (không đen thuần) để giữ tinh thần "giấy". ---- */
+  --shadow-sm: 0 1px 2px rgba(23, 20, 15, 0.06);
+  --shadow-md: 0 6px 16px rgba(23, 20, 15, 0.08);
+  --shadow-lg: 0 16px 32px rgba(23, 20, 15, 0.12);
+
+  /* ---- Display type: 1 cỡ riêng cho hero/heading cấp 1 thật sự (không áp
+     dụng cho <h1> chung — trang search/category dùng h1 cho tiêu đề ngữ
+     cảnh, không cần cỡ display). ---- */
+  --font-size-display: clamp(2.25rem, 1.85rem + 2vw, 3.5rem);
+
   /* ---- Measure ---- */
   --content-width: 40rem;
   --list-width: 56rem;
