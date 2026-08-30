@@ -49,3 +49,22 @@ founder.
 
 **Founder cần xác nhận:** đây có phải là lần thử thật của bạn không? Nếu không, sẽ xóa kèm
 ảnh đính kèm/storage object tương ứng (nếu có — hiện bản ghi này không có ảnh).
+
+## 3. Đính chính nguồn gốc danh sách 15 ID Attempt Report seed trong migration
+
+Comment trong `20260831090000_seed_content_flag.sql` mô tả danh sách 15 ID Attempt Report
+được backfill `is_seed_content = true` là "đã đối chiếu trực tiếp với
+`docs/product/content-seed-log.md`". Cách diễn đạt đó dễ gây hiểu lầm là
+`content-seed-log.md` liệt kê sẵn 15 ID này — **không phải vậy**. `content-seed-log.md` chỉ
+nêu tên 6 How-To seed theo tiêu đề (mục "Nội dung seed mới") và ID Attempt Report thật của
+founder (`421dd8c8-...`); tài liệu đó không liệt kê UUID của 15 Attempt Report seed.
+
+**[SỰ THẬT]** Danh sách 15 ID thực tế trong migration được dựng lại bằng một truy vấn trực
+tiếp vào Supabase (service role, 2026-08-31): lấy toàn bộ Attempt Report thuộc 6 How-To seed
+nêu trên, rồi loại trừ 2 bản ghi không seed (`421dd8c8-...` của founder và `fb4bf316-...` —
+bản ghi mơ hồ ở mục 2 phía trên). Danh sách này khớp về mặt số học với tường thuật của
+`content-seed-log.md` (17 Attempt Report tổng cộng trên production tại thời điểm đó = 1 bản
+ghi thật của founder + 1 bản ghi mơ hồ + 15 bản ghi seed), nhưng nguồn trực tiếp của 15 ID là
+truy vấn Supabase, không phải một danh sách ID có sẵn trong `content-seed-log.md`. Không sửa
+comment trong file migration (đã áp dụng lên production, giữ nguyên làm biên bản lịch sử) —
+ghi chú đính chính tại đây.

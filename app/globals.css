@@ -1771,9 +1771,9 @@ ul {
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(circle at 50% 50%, var(--color-line) 0 5%, transparent 5% 100%),
+    radial-gradient(circle closest-side at 50% 50%, var(--color-line) 0 5%, transparent 5% 100%),
     radial-gradient(
-      circle at 50% 50%,
+      circle closest-side at 50% 50%,
       transparent 0 34%,
       var(--color-line-soft) 34% 38%,
       transparent 38% 58%,

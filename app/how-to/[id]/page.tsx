@@ -105,7 +105,7 @@ function EvidenceTicketItem({
             <p className="evidence-result" data-result={report.result}>
               {RESULT_LABELS[report.result]}
             </p>
-            {report.is_seed_content && <p className="evidence-seed-badge">Nội dung minh họa</p>}
+            {report.is_seed_content === true && <p className="evidence-seed-badge">Nội dung minh họa</p>}
           </div>
           <div className="field-note-body">
             {report.images.length > 0 && (
@@ -155,7 +155,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
   const { data: howTo, error: howToError } = await supabase
     .from("how_to")
     .select(
-      "id, title, description, expected_outcome, user_id, hero_image_path, duration_minutes, servings, dish:dish_id(id, name)"
+      "id, title, description, expected_outcome, user_id, hero_image_path, duration_minutes, servings, is_seed_content, dish:dish_id(id, name)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -327,13 +327,17 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           </span>
           <h1>{howTo.title}</h1>
 
+          {howTo.is_seed_content === true && <p className="evidence-seed-badge">Nội dung minh họa</p>}
+
           {howTo.description && <p className="supporting-text">{howTo.description}</p>}
 
-          {(howTo.duration_minutes !== null || howTo.servings !== null) && (
+          {(typeof howTo.duration_minutes === "number" || typeof howTo.servings === "number") && (
             <p className="quick-facts">
-              {howTo.duration_minutes !== null && <span>{howTo.duration_minutes} phút</span>}
-              {howTo.duration_minutes !== null && howTo.servings !== null && <span aria-hidden="true"> · </span>}
-              {howTo.servings !== null && <span>{howTo.servings} khẩu phần</span>}
+              {typeof howTo.duration_minutes === "number" && <span>{howTo.duration_minutes} phút</span>}
+              {typeof howTo.duration_minutes === "number" && typeof howTo.servings === "number" && (
+                <span> · </span>
+              )}
+              {typeof howTo.servings === "number" && <span>{howTo.servings} khẩu phần</span>}
             </p>
           )}
 
