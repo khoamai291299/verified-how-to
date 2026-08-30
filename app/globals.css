@@ -306,6 +306,170 @@ a {
 }
 
 /* =========================================================================
+   APP SHELL + DESKTOP NAV RAIL — điều hướng chiều sâu đầu tiên của sản phẩm
+   (Phase B). Ẩn hoàn toàn dưới 1024px, nơi bottom-nav đảm nhiệm vai trò này.
+   ========================================================================= */
+
+.app-shell {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    display: flex;
+    align-items: flex-start;
+  }
+}
+
+.app-shell-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-rail {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .nav-rail {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    align-self: stretch;
+    width: 14rem;
+    padding: var(--space-md) var(--space-sm);
+    gap: 0.2rem;
+    background: var(--color-paper-raised);
+    border-right: 1px solid var(--color-line-soft);
+    transition: width 0.16s ease;
+  }
+
+  .nav-rail[data-collapsed="true"] {
+    width: 4.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-rail {
+    transition: none;
+  }
+}
+
+.nav-rail-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: var(--space-sm);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+  transition: background-color 0.14s ease, color 0.14s ease;
+}
+
+.nav-rail-toggle:hover,
+.nav-rail-toggle:focus-visible {
+  background: var(--color-ember-tint);
+  color: var(--color-ember-deep);
+}
+
+.nav-rail-toggle svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.nav-rail-chevron {
+  display: flex;
+  transition: transform 0.16s ease;
+}
+
+.nav-rail-chevron[data-collapsed="true"] {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-rail-toggle,
+  .nav-rail-chevron {
+    transition: none;
+  }
+}
+
+.nav-rail[data-collapsed="true"] .nav-rail-toggle {
+  align-self: center;
+}
+
+.nav-rail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0.6rem var(--space-sm);
+  border-radius: var(--radius-md);
+  color: var(--color-ink-soft);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+  transition: background-color 0.14s ease, color 0.14s ease;
+}
+
+.nav-rail-item:hover,
+.nav-rail-item:focus-visible {
+  background: var(--color-ember-tint);
+  color: var(--color-ember-deep);
+}
+
+.nav-rail-item[aria-current="page"] {
+  background: var(--color-ember-tint);
+  color: var(--color-ember-deep);
+  font-weight: 700;
+}
+
+.nav-rail-item svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+  flex: 0 0 auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-rail-item {
+    transition: none;
+  }
+}
+
+.nav-rail-item-accent {
+  background: var(--color-ember);
+  color: #fff;
+}
+
+.nav-rail-item-accent:hover,
+.nav-rail-item-accent:focus-visible {
+  background: var(--color-ember-deep);
+  color: #fff;
+}
+
+.nav-rail-item-accent[aria-current="page"] {
+  background: var(--color-ember-deep);
+  color: #fff;
+}
+
+.nav-rail[data-collapsed="true"] .nav-rail-item {
+  justify-content: center;
+}
+
+.nav-rail[data-collapsed="true"] .nav-rail-item span {
+  display: none;
+}
+
+/* =========================================================================
    MOBILE BOTTOM NAV — mô hình điều hướng riêng cho mobile, không phải bản
    thu nhỏ của nav desktop (mission §19). Ẩn hoàn toàn ≥ 720px.
    ========================================================================= */

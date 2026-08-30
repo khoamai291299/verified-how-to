@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Be_Vietnam_Pro, IBM_Plex_Mono } from "next/font/google";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/supabase/session";
-import { SignOutButton } from "@/app/sign-out/sign-out-button";
 import { BottomNav } from "@/app/bottom-nav";
+import { NavRail } from "@/app/nav-rail";
 import "./globals.css";
 
 // Be Vietnam Pro + IBM Plex Mono: đã chốt ở design-direction.md §4 — hỗ trợ đầy đủ
@@ -28,7 +28,6 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const user = await getCurrentUser();
-  const displayName = (user?.user_metadata as { display_name?: string } | undefined)?.display_name ?? user?.email ?? "";
 
   return (
     <html lang="vi" className={`${bodySans.variable} ${evidenceMono.variable}`}>
@@ -56,20 +55,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </Link>
           <nav className="site-nav">
             {user ? (
-              <>
-                <Link href="/saved" className="nav-text-link">
-                  Đã lưu
-                </Link>
-                <Link href="/profile" className="nav-text-link">
-                  {displayName || "Hồ sơ"}
-                </Link>
-                <Link href="/how-to/new" className="button-primary">
-                  + Tạo cách làm
-                </Link>
-                <span className="nav-text-link">
-                  <SignOutButton />
-                </span>
-              </>
+              <Link href="/how-to/new" className="button-primary">
+                + Chia sẻ kiến thức
+              </Link>
             ) : (
               <>
                 <Link href="/sign-in" className="nav-text-link">
@@ -83,7 +71,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </nav>
         </header>
 
-        {children}
+        <div className="app-shell">
+          <NavRail authed={user !== null} />
+          <div className="app-shell-main">{children}</div>
+        </div>
 
         <footer className="site-footer">
           <p>Verified How-To — phản hồi thật từ người đã thử, không phải xác nhận của hệ thống.</p>
