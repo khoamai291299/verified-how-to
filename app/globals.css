@@ -541,6 +541,17 @@ h2 {
   margin-bottom: var(--space-md);
 }
 
+.quick-facts {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.82rem;
+  color: var(--color-ink-soft);
+  margin-bottom: var(--space-md);
+}
+
+.quick-facts span + span {
+  margin-left: 0.15rem;
+}
+
 /* =========================================================================
    FORMS
    ========================================================================= */

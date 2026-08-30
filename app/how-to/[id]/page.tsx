@@ -154,7 +154,9 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
   const { data: howTo, error: howToError } = await supabase
     .from("how_to")
-    .select("id, title, description, expected_outcome, user_id, hero_image_path, dish:dish_id(id, name)")
+    .select(
+      "id, title, description, expected_outcome, user_id, hero_image_path, duration_minutes, servings, dish:dish_id(id, name)"
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -326,6 +328,14 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
           <h1>{howTo.title}</h1>
 
           {howTo.description && <p className="supporting-text">{howTo.description}</p>}
+
+          {(howTo.duration_minutes !== null || howTo.servings !== null) && (
+            <p className="quick-facts">
+              {howTo.duration_minutes !== null && <span>{howTo.duration_minutes} phút</span>}
+              {howTo.duration_minutes !== null && howTo.servings !== null && <span aria-hidden="true"> · </span>}
+              {howTo.servings !== null && <span>{howTo.servings} khẩu phần</span>}
+            </p>
+          )}
 
           {categoryTags.length > 0 && (
             <ul className="category-tags">
