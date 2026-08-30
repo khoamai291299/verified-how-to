@@ -122,7 +122,7 @@ không có `components/` riêng — sẽ tạo trong quá trình làm):
 | Phase | Nội dung | Ghi chú |
 |---|---|---|
 | A | Tài liệu này + audit thật | Xong |
-| B | Design system: token elevation, placeholder-art system, display type, brandmark; áp dụng 2 migration | Nền tảng cho mọi phase sau |
+| B | Design system: token elevation, placeholder-art system, display type, brandmark; áp dụng 2 migration | Nền tảng cho mọi phase sau — Xong (2026-08-31) |
 | C | Shell: nav rail desktop + giữ mobile nav, footer thật | |
 | D | Trang chủ/Khám phá: topic switcher (Ẩm thực active, còn lại "Sắp có"), nâng cấp card/elevation | |
 | E | Search, Dish, How-To: áp elevation + placeholder-art mới, giữ nguyên cấu trúc How-To (đã đạt) | |
