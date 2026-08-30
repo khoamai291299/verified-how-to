@@ -1723,11 +1723,25 @@ ul {
   transform: none;
 }
 
+/* Chưa có ảnh kết quả thật nào — mô típ 2 vòng tròn đồng tâm + 1 chấm giữa,
+   tông màu trung tính thấp bão hòa, CỐ Ý khác hẳn màu ấm rực của ảnh
+   seed/demo thật (xem .evidence-seed-badge) để không ai nhầm "chưa có dữ
+   liệu" với "đây là một tấm ảnh". */
 .specimen-empty {
   display: block;
   width: 100%;
   height: 100%;
-  background-image: repeating-linear-gradient(135deg, var(--color-line) 0 1px, transparent 1px 8px);
+  background:
+    radial-gradient(circle at 50% 50%, var(--color-line) 0 5%, transparent 5% 100%),
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 0 34%,
+      var(--color-line-soft) 34% 38%,
+      transparent 38% 58%,
+      var(--color-line-soft) 58% 62%,
+      transparent 62% 100%
+    ),
+    var(--color-paper-deep);
 }
 
 @media (prefers-reduced-motion: reduce) {
