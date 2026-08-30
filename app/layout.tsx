@@ -35,8 +35,19 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <header className="site-header">
           <Link href="/" className="brand">
-            <span className="brand-word">
-              Verified <span>How-To</span>
+            <span className="brand-row">
+              <svg className="brand-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M4 13.5 9.5 19 20 6"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span className="brand-word">
+                Verified <span>How-To</span>
+              </span>
             </span>
             <span className="brand-kicker">sổ tay thực hành thật</span>
           </Link>

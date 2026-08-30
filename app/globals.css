@@ -171,6 +171,19 @@ a {
   color: var(--foreground);
 }
 
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.brand-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--color-ember);
+  flex: 0 0 auto;
+}
+
 .brand-word {
   font-size: 1.2rem;
   font-weight: 800;
@@ -1232,6 +1245,14 @@ ul {
 .hero h1 {
   font-size: clamp(2.1rem, 1.55rem + 2.4vw, 3.2rem);
   line-height: 1.08;
+}
+
+.hero .home-hero-heading {
+  font-size: var(--font-size-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-bottom: var(--space-sm);
 }
 
 /* Luận điểm sản phẩm — dòng thứ hai đọc tiếp câu đầu, mang trọng lượng thị

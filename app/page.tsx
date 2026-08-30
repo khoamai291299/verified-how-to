@@ -500,7 +500,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
             </>
           ) : (
             <>
-              <h1>Không chỉ cho bạn biết cách làm</h1>
+              <h1 className="home-hero-heading">Không chỉ cho bạn biết cách làm</h1>
               <p className="product-thesis">
                 mà cho bạn biết điều gì đã xảy ra khi người thật thử làm.
               </p>
