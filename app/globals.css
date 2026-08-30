@@ -471,7 +471,10 @@ a {
 
 /* =========================================================================
    MOBILE BOTTOM NAV — mô hình điều hướng riêng cho mobile, không phải bản
-   thu nhỏ của nav desktop (mission §19). Ẩn hoàn toàn ≥ 720px.
+   thu nhỏ của nav desktop (mission §19). Ẩn hoàn toàn ≥ 1024px, đúng lúc
+   .nav-rail xuất hiện — trước Phase B, mốc này là 720px, nhưng header đã bỏ
+   Đã lưu/Hồ sơ (giờ do nav-rail đảm nhiệm) nên bottom-nav phải giữ vai trò
+   đó đến tận khi nav-rail sẵn sàng, tránh vùng chết điều hướng ở 720–1023px.
    ========================================================================= */
 
 .bottom-nav {
@@ -490,7 +493,7 @@ a {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-@media (min-width: 720px) {
+@media (min-width: 1024px) {
   .bottom-nav {
     display: none;
   }
@@ -501,7 +504,7 @@ a {
   height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
 }
 
-@media (min-width: 720px) {
+@media (min-width: 1024px) {
   .bottom-nav-spacer {
     display: none;
   }
@@ -2338,7 +2341,7 @@ a.profile-stat:focus-visible {
   text-align: center;
 }
 
-@media (max-width: 719px) {
+@media (max-width: 1023px) {
   .site-footer {
     padding-bottom: calc(var(--bottom-nav-height) + var(--space-md) + env(safe-area-inset-bottom, 0px));
   }
