@@ -36,11 +36,14 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <header className="site-header">
           <Link href="/" className="brand">
             <span className="brand-row">
+              {/* Ký hiệu spark trừu tượng — cố ý KHÔNG dùng hình checkmark: design-direction.md
+                  §14 cấm rõ "checkmark xanh kiểu verified" vì gợi ý xác nhận hệ thống, mâu
+                  thuẫn với nguyên tắc Evidence ≠ Truth. */}
               <svg className="brand-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path
-                  d="M4 13.5 9.5 19 20 6"
+                  d="M12 4 12 20 M5.5 7.5 18.5 16.5 M18.5 7.5 5.5 16.5"
                   stroke="currentColor"
-                  strokeWidth="3"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
