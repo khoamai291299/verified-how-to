@@ -2429,18 +2429,35 @@ a.profile-stat:focus-visible {
   font-size: 1.1rem;
 }
 
+/* Card thay vì hàng-viền — cùng ngôn ngữ elevation đã áp cho .howto-entry ở
+   Phase B, tránh trang Hồ sơ đọc như bảng dữ liệu (mission §19). */
 .profile-list {
   list-style: none;
   margin-bottom: var(--space-md);
 }
 
 .profile-list li {
-  padding: 0.65rem 0;
-  border-top: 1px solid var(--color-line-soft);
+  padding: 0.85rem 1rem;
+  margin-bottom: var(--space-xs);
+  border-radius: var(--radius-md);
+  background: var(--color-paper-raised);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.16s ease;
 }
 
 .profile-list li:last-child {
-  border-bottom: 1px solid var(--color-line-soft);
+  margin-bottom: 0;
+}
+
+.profile-list li:has(a:hover),
+.profile-list li:has(a:focus-visible) {
+  box-shadow: var(--shadow-md);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-list li {
+    transition: none;
+  }
 }
 
 .profile-list-meta {
