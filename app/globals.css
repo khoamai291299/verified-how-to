@@ -2560,15 +2560,73 @@ a.profile-stat:focus-visible {
 
 .site-footer {
   margin-top: var(--space-xl);
-  padding: var(--space-md);
+  padding: var(--space-lg) var(--space-md) var(--space-md);
   border-top: 1px solid var(--color-line-soft);
-  text-align: center;
 }
 
 @media (max-width: 1023px) {
   .site-footer {
     padding-bottom: calc(var(--bottom-nav-height) + var(--space-md) + env(safe-area-inset-bottom, 0px));
   }
+}
+
+/* Footer thật với link thật — không bịa liên hệ/social/app chưa có
+   (mission §21: "Không fabricate phone/address/social/app/QR"). Chỉ 3 cột
+   có nội dung thật: giới thiệu ngắn, điều hướng khám phá, tài khoản. */
+.footer-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-lg) var(--space-xl);
+  max-width: var(--detail-width);
+  margin: 0 auto var(--space-lg);
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 10rem;
+}
+
+.footer-column-brand {
+  flex: 1 1 16rem;
+}
+
+.footer-heading {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  margin-bottom: 0.2rem;
+}
+
+.footer-blurb {
+  color: var(--color-ink-soft);
+  font-size: 0.9rem;
+  max-width: 24rem;
+}
+
+.footer-column a {
+  color: var(--color-ink-soft);
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.footer-column a:hover,
+.footer-column a:focus-visible {
+  color: var(--color-ember-deep);
+  text-decoration: underline;
+}
+
+.footer-bottom-line {
+  max-width: var(--detail-width);
+  margin: 0 auto;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-line-soft);
+  font-size: 0.82rem;
+  color: var(--color-ink-faint);
+  text-align: center;
 }
 
 .site-footer p {

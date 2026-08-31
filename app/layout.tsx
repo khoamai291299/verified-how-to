@@ -77,7 +77,37 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         </div>
 
         <footer className="site-footer">
-          <p>Verified How-To — phản hồi thật từ người đã thử, không phải xác nhận của hệ thống.</p>
+          <div className="footer-columns">
+            <div className="footer-column footer-column-brand">
+              <span className="footer-heading">Verified How-To</span>
+              <p className="footer-blurb">
+                Không chỉ cho bạn biết cách làm — mà cho bạn biết điều gì đã xảy ra khi người thật thử làm.
+              </p>
+            </div>
+            <div className="footer-column">
+              <span className="footer-heading">Khám phá</span>
+              <Link href="/">Khám phá</Link>
+              <Link href="/#tim-kiem">Tìm kiếm</Link>
+              <Link href="/#chu-de">Chủ đề</Link>
+            </div>
+            <div className="footer-column">
+              <span className="footer-heading">Tài khoản</span>
+              {user ? (
+                <>
+                  <Link href="/saved">Đã lưu</Link>
+                  <Link href="/profile">Hồ sơ</Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/sign-in">Đăng nhập</Link>
+                  <Link href="/sign-up">Đăng ký</Link>
+                </>
+              )}
+            </div>
+          </div>
+          <p className="footer-bottom-line">
+            Verified How-To — phản hồi thật từ người đã thử, không phải xác nhận của hệ thống.
+          </p>
         </footer>
 
         <div className="bottom-nav-spacer" aria-hidden="true" />
