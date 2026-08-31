@@ -367,8 +367,29 @@ export function HowToForm({
 
   const selectedCategoryNames = categories.filter((c) => categoryIds.includes(c.id)).map((c) => c.name);
 
+  // Tiến độ thật, suy từ chính state của form — không phải danh sách bước cố
+  // định đếm ngược. Mỗi mục phản ánh trạng thái nhập liệu thật lúc này, cập
+  // nhật ngay khi người dùng gõ (mission §14: người dùng luôn biết "còn
+  // thiếu gì, cái gì đã hợp lệ").
+  const hasBasicInfo = dish.trim().length > 0 && title.trim().length > 0;
+  const filledIngredientCount = ingredientRows.filter((r) => r.name.trim().length > 0).length;
+  const filledStepCount = stepRows.filter((s) => s.text.trim().length > 0).length;
+
   return (
     <form action={formAction}>
+      {!showPreview && (
+        <ul className="form-progress" aria-label="Tiến độ điền thông tin">
+          <li data-done={hasBasicInfo}>Thông tin món{hasBasicInfo ? " ✓" : ""}</li>
+          <li data-done={filledIngredientCount > 0}>
+            Nguyên liệu{filledIngredientCount > 0 ? ` ${filledIngredientCount}` : " (tùy chọn)"}
+          </li>
+          <li data-done={filledStepCount > 0}>
+            Các bước{filledStepCount > 0 ? ` ${filledStepCount}/${stepRows.length}` : ""}
+          </li>
+          <li data-done={heroImagePreviewUrl !== null}>Ảnh{heroImagePreviewUrl ? " ✓" : " (tùy chọn)"}</li>
+        </ul>
+      )}
+
       {showPreview && (
         <div className="preview-panel">
           <div className="preview-panel-banner">

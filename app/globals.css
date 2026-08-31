@@ -1045,6 +1045,26 @@ ul {
 
 /* Xem trước — dùng lại chính khung `.howto-main` của trang chi tiết thật,
    để người dùng thấy đúng cái sắp đăng, không phải một bản tóm tắt khác. */
+/* Tiến độ điền form — suy từ state thật (mission §14: luôn biết còn thiếu
+   gì). Không phải checklist "đã xác minh" — chỉ là trạng thái điền liệu cá
+   nhân, không liên quan nguyên tắc Evidence/checkmark ở nơi khác. */
+.form-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  list-style: none;
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-ink-faint);
+}
+
+.form-progress li[data-done="true"] {
+  color: var(--color-moss);
+}
+
 .preview-panel {
   margin-bottom: var(--space-lg);
 }
