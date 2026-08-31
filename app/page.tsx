@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/supabase/session";
 import { getAllCategories } from "@/lib/supabase/categories";
 import { CATEGORY_DIMENSION_LABELS, RESULT_LABELS, type AttemptReportResult, type Category } from "@/lib/supabase/types";
 import { SaveIconButton, SaveIconSignInLink } from "@/app/saved/save-icon-button";
+import { stripDiacritics } from "@/lib/text-normalize";
 
 // Danh sách How-To thay đổi liên tục — không thể prerender tĩnh lúc build.
 export const dynamic = "force-dynamic";
@@ -43,13 +44,18 @@ type SearchMatch = {
  * theo trường khớp, có thưởng thêm cho khớp chính xác toàn bộ tiêu đề (để
  * tìm đúng tên luôn đứng đầu). Không dùng full-text search/semantic — cố ý,
  * xem §4 tài liệu quyết định: bắt đầu từ retrieval tất định, mở rộng sau.
+ *
+ * Khớp không phân biệt dấu tiếng Việt (rebuild-v6-current-state-gap.md §A —
+ * "banh xeo" trước đây trả về 0 kết quả cho "Bánh xèo"). So khớp phía ứng
+ * dụng bằng stripDiacritics() thay vì ilike của Postgres — kho dữ liệu hiện
+ * tại đủ nhỏ (7 how_to, một danh sách nguyên liệu ngắn) để tải toàn bộ cột
+ * cần so khớp rồi lọc trong JS không phải vấn đề hiệu năng thật.
  */
 async function searchHowToIds(
   supabase: ReturnType<typeof getServerSupabaseClient>,
   query: string,
 ): Promise<Map<string, SearchMatch>> {
-  const like = `%${query}%`;
-  const lowerQuery = query.toLowerCase();
+  const strippedQuery = stripDiacritics(query);
   const matchByHowToId = new Map<string, SearchMatch>();
   const getEntry = (howToId: string) => {
     let entry = matchByHowToId.get(howToId);
@@ -61,24 +67,32 @@ async function searchHowToIds(
   };
 
   const [titleMatches, dishMatches, ingredientMatches] = await Promise.all([
-    supabase.from("how_to").select("id, title, description").or(`title.ilike.${like},description.ilike.${like}`),
-    supabase.from("dish").select("id, name").ilike("name", like),
-    supabase.from("how_to_ingredient").select("how_to_id, name").ilike("name", like),
+    supabase.from("how_to").select("id, title, description"),
+    supabase.from("dish").select("id, name"),
+    supabase.from("how_to_ingredient").select("how_to_id, name"),
   ]);
 
   for (const row of titleMatches.data ?? []) {
-    const titleLower = row.title.toLowerCase();
-    const points = titleLower === lowerQuery ? 5 : titleLower.includes(lowerQuery) ? 3 : 1;
-    getEntry(row.id).score += points;
+    const strippedTitle = stripDiacritics(row.title);
+    const strippedDescription = row.description ? stripDiacritics(row.description) : "";
+    const titleMatches5 = strippedTitle === strippedQuery;
+    const titleMatches3 = !titleMatches5 && strippedTitle.includes(strippedQuery);
+    const descriptionMatches = !titleMatches5 && !titleMatches3 && strippedDescription.includes(strippedQuery);
+    if (titleMatches5) getEntry(row.id).score += 5;
+    else if (titleMatches3) getEntry(row.id).score += 3;
+    else if (descriptionMatches) getEntry(row.id).score += 1;
   }
 
-  const dishIds = (dishMatches.data ?? []).map((d) => d.id);
+  const dishIds = (dishMatches.data ?? [])
+    .filter((d) => stripDiacritics(d.name).includes(strippedQuery))
+    .map((d) => d.id);
   if (dishIds.length > 0) {
     const { data: howTosByDish } = await supabase.from("how_to").select("id").in("dish_id", dishIds);
     for (const row of howTosByDish ?? []) getEntry(row.id).score += 3;
   }
 
   for (const row of ingredientMatches.data ?? []) {
+    if (!stripDiacritics(row.name).includes(strippedQuery)) continue;
     const entry = getEntry(row.how_to_id);
     entry.score += 2;
     if (!entry.matchedIngredients.includes(row.name)) entry.matchedIngredients.push(row.name);
