@@ -87,8 +87,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <div className="footer-column">
               <span className="footer-heading">Khám phá</span>
               <Link href="/">Khám phá</Link>
-              <Link href="/#tim-kiem">Tìm kiếm</Link>
-              <Link href="/#chu-de">Chủ đề</Link>
+              <Link href="/search">Tìm kiếm</Link>
+              <Link href="/topics">Chủ đề</Link>
             </div>
             <div className="footer-column">
               <span className="footer-heading">Tài khoản</span>

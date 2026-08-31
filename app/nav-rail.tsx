@@ -165,12 +165,22 @@ export function NavRail({ authed }: { authed: boolean }) {
           <span>Khám phá</span>
         </Link>
 
-        <Link href="/#tim-kiem" className="nav-rail-item" title={collapsed ? "Tìm kiếm" : undefined}>
+        <Link
+          href="/search"
+          className="nav-rail-item"
+          aria-current={current(pathname, "/search")}
+          title={collapsed ? "Tìm kiếm" : undefined}
+        >
           <SearchIcon />
           <span>Tìm kiếm</span>
         </Link>
 
-        <Link href="/#chu-de" className="nav-rail-item" title={collapsed ? "Chủ đề" : undefined}>
+        <Link
+          href="/topics"
+          className="nav-rail-item"
+          aria-current={current(pathname, "/topics")}
+          title={collapsed ? "Chủ đề" : undefined}
+        >
           <GridIcon />
           <span>Chủ đề</span>
         </Link>

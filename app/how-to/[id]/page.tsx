@@ -349,7 +349,7 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
             <ul className="category-tags">
               {categoryTags.map((c) => (
                 <li key={c.id}>
-                  <Link href={`/?category=${c.slug}`} className="category-tag">
+                  <Link href={`/search?category=${c.slug}`} className="category-tag">
                     {c.name}
                   </Link>
                 </li>

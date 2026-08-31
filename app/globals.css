@@ -79,10 +79,18 @@
      cảnh, không cần cỡ display). ---- */
   --font-size-display: clamp(2.25rem, 1.85rem + 2vw, 3.5rem);
 
-  /* ---- Measure ---- */
+  /* ---- Measure ----
+     list-width tăng từ 56rem lên 74rem ở rebuild-v6.2 (mission §5): ở
+     ≥1280px, nav rail (~240-260px) + content 56rem để lại một dải trắng
+     trống rất lớn bên phải — đúng vấn đề "Sidebar | content hẹp | trống"
+     mission cấm. 74rem dùng không gian thật tốt hơn mà vẫn còn margin thoáng
+     ở 1440px (rail + 74rem + padding ≈ 1330px trong viewport 1440px). Các
+     thành phần đọc nhiều chữ (hero-text, howto-entry-main…) vẫn tự giới hạn
+     bề rộng riêng, không phụ thuộc vào cỡ container ngoài này. */
   --content-width: 40rem;
-  --list-width: 56rem;
+  --list-width: 74rem;
   --detail-width: 73rem;
+  --search-width: 88rem;
   --rail-width: 22rem;
 
   --bottom-nav-height: 62px;
@@ -613,6 +621,10 @@ main.main-detail {
 
 main.main-list {
   max-width: var(--list-width);
+}
+
+main.search-page {
+  max-width: var(--search-width);
 }
 
 main.auth-main {
@@ -1432,42 +1444,139 @@ ul {
 }
 
 .topic-cards {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-sm);
 }
 
+@media (min-width: 640px) {
+  .topic-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@container app-main (min-width: 900px) {
+  .topic-cards {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Thẻ chủ đề ẢNH-làm-chính (mission §2/§12: "no icon-only cards") — mỗi thẻ
+   có một mảng "placeholder-art" hình học riêng theo chủ đề (không phải ảnh
+   chụp thật, xem .topic-card-art bên dưới) làm phần chiếm diện tích lớn
+   nhất, tên/mô tả nằm dưới, giống bố cục thẻ Discovery chứ không phải pill
+   chữ như bản trước rebuild-v6.2. */
 .topic-card {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.85rem 1.25rem;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-line);
+  overflow: hidden;
   background: var(--color-paper-raised);
-  font-weight: 600;
-}
-
-.topic-card-active {
-  border-color: var(--color-ember);
-  background: var(--color-ember-tint);
-  color: var(--color-ember-deep);
+  border: 1px solid var(--color-line);
   box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.16s ease, transform 0.16s ease;
 }
 
-.topic-card-icon {
-  width: 1.2rem;
-  height: 1.2rem;
-  flex: 0 0 auto;
+.topic-card:hover,
+.topic-card:focus-visible {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
-.topic-card-soon {
-  opacity: 0.55;
-  gap: 0.6rem;
+@media (prefers-reduced-motion: reduce) {
+  .topic-card {
+    transition: none;
+  }
+
+  .topic-card:hover,
+  .topic-card:focus-visible {
+    transform: none;
+  }
+}
+
+.topic-card-art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+}
+
+.topic-card-large .topic-card-art-large {
+  aspect-ratio: 16 / 10;
+}
+
+/* Mỗi chủ đề một cặp màu/hoạ tiết hình học riêng — trung thực (không giả
+   làm ảnh chụp), nhưng đủ khác nhau để nhận diện được từng chủ đề bằng mắt,
+   không lặp lại y hệt như .specimen-empty dùng chung cho mọi Cách làm. */
+.topic-card-art[data-topic="am-thuc"] {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(172, 58, 32, 0.28), transparent 60%),
+    radial-gradient(circle at 75% 70%, rgba(185, 133, 90, 0.35), transparent 55%),
+    var(--color-ember-tint);
+}
+
+.topic-card-art[data-topic="do-thu-cong"] {
+  background:
+    repeating-linear-gradient(45deg, rgba(138, 95, 52, 0.18) 0 10px, transparent 10px 20px),
+    var(--color-paper-deep);
+}
+
+.topic-card-art[data-topic="lam-dep"] {
+  background:
+    radial-gradient(circle at 65% 35%, rgba(217, 155, 170, 0.4), transparent 55%),
+    radial-gradient(circle at 25% 75%, rgba(217, 155, 170, 0.22), transparent 60%),
+    var(--color-paper-deep);
+}
+
+.topic-card-art[data-topic="meo-vat-cuoc-song"] {
+  background:
+    radial-gradient(circle at 40% 60%, rgba(63, 107, 69, 0.28), transparent 55%),
+    repeating-linear-gradient(-45deg, rgba(63, 107, 69, 0.12) 0 8px, transparent 8px 18px),
+    var(--color-paper-deep);
+}
+
+.topic-card-art[data-topic="cong-nghe"] {
+  background:
+    linear-gradient(135deg, rgba(92, 86, 71, 0.28), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(92, 86, 71, 0.14) 0 2px, transparent 2px 14px),
+    var(--color-paper-deep);
+}
+
+.topic-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.topic-card-name {
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--color-ink);
+}
+
+.topic-card-active .topic-card-name {
+  color: var(--color-ember-deep);
+}
+
+.topic-card-desc {
+  font-size: 0.8rem;
+  color: var(--color-ink-soft);
+}
+
+/* Chỉ làm mờ phần ảnh minh hoạ để báo hiệu "sắp có" — KHÔNG áp opacity lên
+   toàn thẻ, vì nó kéo theo chữ (badge/desc vốn đã màu nhạt) xuống dưới
+   ngưỡng tương phản AA (axe: color-contrast serious trên 3 trang). */
+.topic-card-soon .topic-card-art {
+  filter: grayscale(0.5);
+  opacity: 0.75;
 }
 
 .topic-card-badge {
-  font-size: 0.7rem;
+  align-self: flex-start;
+  margin-top: 0.2rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -1475,6 +1584,276 @@ ul {
   border-radius: var(--radius-sm);
   background: var(--color-line-soft);
   color: var(--color-ink-faint);
+}
+
+.topic-cards-grid {
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: var(--space-lg);
+}
+
+@media (min-width: 640px) {
+  .topic-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .topic-cards-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* ---- Chọn chủ đề làm ngữ cảnh tìm kiếm (trang /search) ---- */
+
+.topic-chip-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: var(--space-sm) 0 var(--space-md);
+}
+
+.topic-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: var(--color-paper-raised);
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+}
+
+.topic-chip:hover,
+.topic-chip:focus-visible {
+  border-color: var(--color-ember);
+  color: var(--color-ember-deep);
+}
+
+.topic-chip-active {
+  border-color: var(--color-ember);
+  background: var(--color-ember-tint);
+  color: var(--color-ember-deep);
+}
+
+/* Không dùng opacity ở đây — cùng lỗi tương phản đã sửa ở .topic-card-soon
+   (kéo theo chữ, hiện đã đủ tương phản ở mức đậm gốc). Nhãn "Sắp có" (badge)
+   một mình đã đủ báo hiệu trạng thái, không cần làm mờ cả chip. */
+.topic-chip-soon {
+  border-style: dashed;
+}
+
+.topic-chip .topic-card-badge {
+  margin-top: 0;
+}
+
+/* ---- Trang hero chủ đề (/topics/[slug]) ---- */
+
+.topic-hero {
+  display: grid;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-paper-raised);
+  box-shadow: var(--shadow-sm);
+}
+
+@container app-main (min-width: 640px) {
+  .topic-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: stretch;
+  }
+}
+
+.topic-hero-art {
+  display: block;
+  min-height: 12rem;
+}
+
+.topic-hero[data-topic="am-thuc"] .topic-hero-art {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(172, 58, 32, 0.32), transparent 60%),
+    radial-gradient(circle at 75% 70%, rgba(185, 133, 90, 0.4), transparent 55%),
+    var(--color-ember-tint);
+}
+
+.topic-hero[data-topic="do-thu-cong"] .topic-hero-art {
+  background: repeating-linear-gradient(45deg, rgba(138, 95, 52, 0.2) 0 12px, transparent 12px 24px), var(--color-paper-deep);
+}
+
+.topic-hero[data-topic="lam-dep"] .topic-hero-art {
+  background: radial-gradient(circle at 60% 40%, rgba(217, 155, 170, 0.45), transparent 55%), var(--color-paper-deep);
+}
+
+.topic-hero[data-topic="meo-vat-cuoc-song"] .topic-hero-art {
+  background: radial-gradient(circle at 40% 60%, rgba(63, 107, 69, 0.32), transparent 55%), var(--color-paper-deep);
+}
+
+.topic-hero[data-topic="cong-nghe"] .topic-hero-art {
+  background: linear-gradient(135deg, rgba(92, 86, 71, 0.32), transparent 60%), var(--color-paper-deep);
+}
+
+.topic-hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: var(--space-lg) var(--space-lg) var(--space-lg) var(--space-md);
+}
+
+.topic-hero-text h1 {
+  font-size: var(--font-size-display);
+  line-height: 1.05;
+}
+
+.topic-coming-soon {
+  padding: var(--space-xl) var(--space-md);
+  border-radius: var(--radius-lg);
+  background: var(--color-paper-deep);
+  text-align: center;
+}
+
+.topic-coming-soon h2 {
+  margin-bottom: 0.4rem;
+}
+
+/* =========================================================================
+   BALANCED VISUAL GRID (/search) — mission §14: aspect ratio khác nhau theo
+   thẻ nhưng bố cục tổng thể vẫn cân đối, không phải masonry cột trôi tự do.
+   Dùng CSS grid dense-packing: mỗi thẻ chiếm số hàng (--grid-span) theo biến
+   thể chiều cao được gán tuần hoàn theo vị trí (xem HEIGHT_PATTERN trong
+   app/search/page.tsx) — cách tất định, không cần đo layout bằng JS.
+   ========================================================================= */
+
+.balanced-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  grid-auto-rows: 8px;
+  grid-auto-flow: dense;
+  /* row-gap ở đây phải là 0, KHÔNG dùng shorthand `gap` — CSS Grid chèn
+     row-gap vào giữa MỌI track bên trong 1 ô đang span nhiều hàng, nên với
+     span 46-56 hàng, mỗi thẻ bị phồng thêm 45-55 lần khoảng gap đó (phát
+     hiện qua axe/Playwright QA: thẻ cao ~1450px thay vì ~450px khi chỉ có
+     1-2 kết quả). Khoảng cách dọc giữa các thẻ dùng margin-bottom trên
+     .grid-card thay vì row-gap. */
+  column-gap: var(--space-md);
+  row-gap: 0;
+  margin-bottom: var(--space-xl);
+}
+
+.grid-card {
+  grid-row: span 46;
+  margin-bottom: var(--space-md);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-line);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.grid-card[data-height="short"] {
+  grid-row: span 38;
+}
+
+.grid-card[data-height="medium"] {
+  grid-row: span 46;
+}
+
+.grid-card[data-height="tall"] {
+  grid-row: span 56;
+}
+
+.grid-card:hover,
+.grid-card:has(.grid-card-stretched-link:focus-visible) {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-card {
+    transition: none;
+  }
+
+  .grid-card:hover,
+  .grid-card:has(.grid-card-stretched-link:focus-visible) {
+    transform: none;
+  }
+}
+
+.grid-card-stretched-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.grid-card-stretched-link:focus-visible {
+  outline: 2px solid var(--color-ember);
+  outline-offset: 2px;
+}
+
+.grid-card-image {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--color-paper-deep);
+}
+
+.grid-card[data-height="short"] .grid-card-image {
+  aspect-ratio: 4 / 3;
+}
+
+.grid-card[data-height="medium"] .grid-card-image {
+  aspect-ratio: 1 / 1;
+}
+
+.grid-card[data-height="tall"] .grid-card-image {
+  aspect-ratio: 3 / 4;
+}
+
+.grid-card-image img,
+.grid-card-image .specimen-empty {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.grid-card-body {
+  flex: 0 0 auto;
+  padding: var(--space-sm) var(--space-sm) var(--space-md);
+}
+
+.grid-card-body h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.25rem;
+  color: var(--color-ink);
+}
+
+.grid-card-desc {
+  font-size: 0.88rem;
+  margin-bottom: 0.4rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.grid-card-stat {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.76rem;
+  color: var(--color-ink-soft);
+}
+
+.search-result-summary {
+  margin-bottom: var(--space-md);
 }
 
 .search-form {

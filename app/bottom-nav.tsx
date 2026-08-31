@@ -17,6 +17,26 @@ function CompassIcon() {
   );
 }
 
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M19.5 19.5 15 15" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function GridIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4" y="4" width="7" height="7" rx="1.2" />
+      <rect x="13" y="4" width="7" height="7" rx="1.2" />
+      <rect x="4" y="13" width="7" height="7" rx="1.2" />
+      <rect x="13" y="13" width="7" height="7" rx="1.2" />
+    </svg>
+  );
+}
+
 function BookmarkIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -34,14 +54,6 @@ function UserIcon() {
   );
 }
 
-function PlusIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function SignInIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -50,6 +62,13 @@ function SignInIcon() {
   );
 }
 
+/**
+ * 5 mục cố định — khớp đúng IA mới của mission (§4/§6): Khám phá, Tìm kiếm,
+ * Chủ đề, Đã lưu, Hồ sơ. "Chia sẻ kiến thức" (CTA chính) cố ý KHÔNG có mặt ở
+ * đây trên mobile — mission liệt kê rõ 5 mục này cho bottom nav, không có
+ * mục thứ 6; CTA tạo vẫn tới được qua nút trong .site-header (luôn hiển thị,
+ * mọi breakpoint) thay vì chiếm 1/5 chỗ của thanh điều hướng chính.
+ */
 export function BottomNav({ authed }: { authed: boolean }) {
   const pathname = usePathname();
 
@@ -60,39 +79,33 @@ export function BottomNav({ authed }: { authed: boolean }) {
         <span>Khám phá</span>
       </Link>
 
-      {authed ? (
-        <>
-          <Link href="/saved" className="bottom-nav-item" aria-current={current(pathname, "/saved")}>
-            <BookmarkIcon />
-            <span>Đã lưu</span>
-          </Link>
-          <Link
-            href="/how-to/new"
-            className="bottom-nav-item bottom-nav-item-create"
-            aria-current={current(pathname, "/how-to/new")}
-          >
-            <span className="bottom-nav-create-badge">
-              <PlusIcon />
-            </span>
-            <span>Tạo</span>
-          </Link>
-          <Link href="/profile" className="bottom-nav-item" aria-current={current(pathname, "/profile")}>
-            <UserIcon />
-            <span>Hồ sơ</span>
-          </Link>
-        </>
-      ) : (
-        <>
-          <Link href="/sign-in" className="bottom-nav-item" aria-current={current(pathname, "/sign-in")}>
-            <SignInIcon />
-            <span>Đăng nhập</span>
-          </Link>
-          <Link href="/sign-up" className="bottom-nav-item" aria-current={current(pathname, "/sign-up")}>
-            <UserIcon />
-            <span>Đăng ký</span>
-          </Link>
-        </>
-      )}
+      <Link href="/search" className="bottom-nav-item" aria-current={current(pathname, "/search")}>
+        <SearchIcon />
+        <span>Tìm kiếm</span>
+      </Link>
+
+      <Link href="/topics" className="bottom-nav-item" aria-current={current(pathname, "/topics")}>
+        <GridIcon />
+        <span>Chủ đề</span>
+      </Link>
+
+      <Link
+        href={authed ? "/saved" : "/sign-in?redirectTo=/saved"}
+        className="bottom-nav-item"
+        aria-current={current(pathname, "/saved")}
+      >
+        <BookmarkIcon />
+        <span>Đã lưu</span>
+      </Link>
+
+      <Link
+        href={authed ? "/profile" : "/sign-in"}
+        className="bottom-nav-item"
+        aria-current={current(pathname, authed ? "/profile" : "/sign-in")}
+      >
+        {authed ? <UserIcon /> : <SignInIcon />}
+        <span>{authed ? "Hồ sơ" : "Đăng nhập"}</span>
+      </Link>
     </nav>
   );
 }
