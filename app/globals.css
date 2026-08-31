@@ -1386,6 +1386,68 @@ ul {
    SEARCH — điểm neo thị giác chính của Khám phá.
    ========================================================================= */
 
+/* =========================================================================
+   TOPIC DISCOVERY — trang chủ mở đầu bằng một lựa chọn chủ đề thay vì đọc
+   thẳng vào nội dung (rebuild-v6-current-state-gap.md §D điểm 1). Chỉ Ẩm
+   thực hoạt động thật; các chủ đề khác là thẻ mờ "Sắp có", không phải link
+   chết (không giả vờ dẫn tới đâu).
+   ========================================================================= */
+
+.topic-discovery {
+  margin-bottom: var(--space-lg);
+}
+
+.topic-discovery-heading {
+  font-size: 1.3rem;
+  margin-bottom: var(--space-sm);
+}
+
+.topic-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.topic-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-line);
+  background: var(--color-paper-raised);
+  font-weight: 600;
+}
+
+.topic-card-active {
+  border-color: var(--color-ember);
+  background: var(--color-ember-tint);
+  color: var(--color-ember-deep);
+  box-shadow: var(--shadow-sm);
+}
+
+.topic-card-icon {
+  width: 1.2rem;
+  height: 1.2rem;
+  flex: 0 0 auto;
+}
+
+.topic-card-soon {
+  opacity: 0.55;
+  gap: 0.6rem;
+}
+
+.topic-card-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-line-soft);
+  color: var(--color-ink-faint);
+}
+
 .search-form {
   display: flex;
   gap: 0.5rem;

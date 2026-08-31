@@ -478,7 +478,29 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
 
   return (
     <main className="main-list">
-      <form role="search" action="/" method="GET" className="search-form">
+      {isBrowsingHome && (
+        <section id="chu-de" className="topic-discovery" aria-label="Chọn chủ đề">
+          <h2 className="topic-discovery-heading">Bạn đang quan tâm điều gì?</h2>
+          <div className="topic-cards">
+            <div className="topic-card topic-card-active" aria-current="true">
+              <svg className="topic-card-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 12a8 8 0 0 1 16 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path d="M4 12h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <path d="M12 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span className="topic-card-name">Ẩm thực</span>
+            </div>
+            {["Thủ công", "Làm đẹp", "Sửa chữa", "Công nghệ"].map((name) => (
+              <div key={name} className="topic-card topic-card-soon" aria-disabled="true">
+                <span className="topic-card-name">{name}</span>
+                <span className="topic-card-badge">Sắp có</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <form id="tim-kiem" role="search" action="/" method="GET" className="search-form">
         <label htmlFor="q" className="sr-only">
           Tìm theo tên, mô tả, hoặc nguyên liệu
         </label>
@@ -487,7 +509,7 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
           type="search"
           name="q"
           defaultValue={query}
-          placeholder="Tìm theo tên, nguyên liệu…"
+          placeholder="Tìm món ăn, nguyên liệu, cách làm…"
         />
         <button type="submit">Tìm</button>
       </form>
