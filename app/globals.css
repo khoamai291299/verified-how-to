@@ -336,6 +336,15 @@ a {
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  /* Container query, không phải viewport media query, cho layout bên trong
+     (vd. .howto-layout) — nav rail đã lấy đi ~224px thật ở ≥1024px, khiến
+     ngưỡng 2 cột tính theo viewport (880px) kích hoạt sớm hơn không gian
+     thật cho phép, ép cột nội dung chính hẹp bất thường (phát hiện ở Phase
+     I responsive QA, đã được final review Phase B cảnh báo trước). Container
+     query đo đúng bề rộng thật còn lại sau khi trừ rail, tự đúng ở mọi trạng
+     thái (rail mở/thu gọn, mọi breakpoint), không cần đoán từng khoảng px. */
+  container-type: inline-size;
+  container-name: app-main;
 }
 
 .nav-rail {
@@ -1172,7 +1181,7 @@ ul {
   display: block;
 }
 
-@media (min-width: 880px) {
+@container app-main (min-width: 880px) {
   .howto-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--rail-width);
@@ -1213,7 +1222,7 @@ ul {
   padding: var(--space-lg) var(--space-md);
 }
 
-@media (min-width: 880px) {
+@container app-main (min-width: 880px) {
   .evidence-rail {
     margin-top: 0;
     position: sticky;
