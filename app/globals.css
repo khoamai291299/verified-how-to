@@ -1662,12 +1662,63 @@ ul {
    HOW-TO LIST — mục lục sổ tay, mẫu vật ảnh làm điểm neo thị giác thật.
    ========================================================================= */
 
-/* "Chuyện xảy ra khi thử" — tín hiệu sản phẩm mạnh nhất: một ghi chú thật của
-   người đã thử, đọc như một mẩu chuyện ngắn, không phải số liệu tổng hợp. */
-.story-section {
+/* Evidence là khái niệm sản phẩm hạng nhất — 3 bước giải thích + câu caveat
+   "không phải xác nhận hệ thống" luôn hiện (không phụ thuộc dữ liệu), ví dụ
+   thật (.story-grid, tái dùng nguyên style bên dưới) chỉ hiện khi có báo
+   cáo thật kèm ghi chú. */
+.evidence-explainer {
   margin-bottom: var(--space-xl);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: var(--color-kraft-tint);
 }
 
+.evidence-explainer-steps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+@media (min-width: 720px) {
+  .evidence-explainer-steps {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.evidence-step-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-ember);
+  color: var(--color-ember-deep);
+  font-weight: 700;
+  font-family: var(--font-mono);
+  margin-bottom: var(--space-xs);
+}
+
+.evidence-step h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.2rem;
+}
+
+.evidence-explainer-caveat {
+  color: var(--color-ink-soft);
+  font-size: 0.92rem;
+  max-width: 42rem;
+  margin-bottom: var(--space-md);
+}
+
+.evidence-explainer .story-grid {
+  margin-bottom: 0;
+}
+
+/* "Chuyện xảy ra khi thử" — tín hiệu sản phẩm mạnh nhất: một ghi chú thật của
+   người đã thử, đọc như một mẩu chuyện ngắn, không phải số liệu tổng hợp.
+   Nay hiển thị như ví dụ cụ thể bên trong khối giải thích Evidence ở trên. */
 .story-grid {
   display: grid;
   gap: var(--space-md);

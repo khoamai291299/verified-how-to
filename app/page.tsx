@@ -612,28 +612,50 @@ export default async function DiscoverPage({ searchParams }: DiscoverPageProps) 
         </section>
       )}
 
-      {stories.length > 0 && (
-        <section aria-label="Chuyện xảy ra khi thử" className="story-section">
-          <span className="eyebrow">Chuyện xảy ra khi thử</span>
-          <div className="story-grid">
-            {stories.map((s) => (
-              <Link key={s.reportId} href={`/how-to/${s.howToId}`} className="story-card">
-                {s.imageUrl && <img src={s.imageUrl} alt="" className="story-image" />}
-                <div className="story-body">
-                  <p className="story-result" data-result={s.result}>
-                    {RESULT_LABELS[s.result]}
-                  </p>
-                  <p className="story-note">“{s.note}”</p>
-                  <p className="story-source">
-                    {s.dishName && !s.howToTitle.toLowerCase().includes(s.dishName.toLowerCase())
-                      ? `${s.dishName} · `
-                      : ""}
-                    {s.howToTitle}
-                  </p>
-                </div>
-              </Link>
-            ))}
+      {isBrowsingHome && (
+        <section className="evidence-explainer" aria-label="Evidence hoạt động thế nào">
+          <div className="evidence-explainer-steps">
+            <div className="evidence-step">
+              <span className="evidence-step-index">1</span>
+              <h3>Cách làm</h3>
+              <p>Hướng dẫn từng bước cho một món hoặc một kỹ thuật.</p>
+            </div>
+            <div className="evidence-step">
+              <span className="evidence-step-index">2</span>
+              <h3>Báo cáo đã thử</h3>
+              <p>Một người thật làm theo, rồi ghi lại điều gì đã thật sự xảy ra.</p>
+            </div>
+            <div className="evidence-step">
+              <span className="evidence-step-index">3</span>
+              <h3>Bằng chứng</h3>
+              <p>Các báo cáo tích lũy lại theo thời gian — thành công, một phần, hay thất bại.</p>
+            </div>
           </div>
+          <p className="evidence-explainer-caveat">
+            Bằng chứng không có nghĩa là hệ thống xác nhận điều này đúng — đó là những gì người
+            đã thử ghi nhận lại.
+          </p>
+          {stories.length > 0 && (
+            <div className="story-grid">
+              {stories.map((s) => (
+                <Link key={s.reportId} href={`/how-to/${s.howToId}`} className="story-card">
+                  {s.imageUrl && <img src={s.imageUrl} alt="" className="story-image" />}
+                  <div className="story-body">
+                    <p className="story-result" data-result={s.result}>
+                      {RESULT_LABELS[s.result]}
+                    </p>
+                    <p className="story-note">“{s.note}”</p>
+                    <p className="story-source">
+                      {s.dishName && !s.howToTitle.toLowerCase().includes(s.dishName.toLowerCase())
+                        ? `${s.dishName} · `
+                        : ""}
+                      {s.howToTitle}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
