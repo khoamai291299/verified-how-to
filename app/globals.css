@@ -86,6 +86,9 @@
   --rail-width: 22rem;
 
   --bottom-nav-height: 62px;
+  /* Đo thật qua Playwright (72.69px ở 1440px) — dùng làm offset sticky cho
+     nav rail, làm tròn lên để chắc chắn không hở khe dưới header. */
+  --header-height: 73px;
 }
 
 *,
@@ -106,7 +109,13 @@ html {
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
+  /* clip, không phải hidden: overflow-x khác "visible" buộc overflow-y tính
+     thành "auto" theo spec CSS overflow, biến body thành scroll container
+     riêng và vô hiệu hóa position:sticky của mọi phần tử con (đã xác nhận
+     bằng đo thật qua Playwright — .site-header và .nav-rail đều bị ảnh
+     hưởng). "clip" ngăn tràn ngang y hệt "hidden" nhưng không kích hoạt quy
+     tắc ép trục kia, nên sticky hoạt động lại bình thường. */
+  overflow-x: clip;
 }
 
 body {
@@ -340,8 +349,6 @@ a {
     flex: 0 0 auto;
     align-self: stretch;
     width: 14rem;
-    padding: var(--space-md) var(--space-sm);
-    gap: 0.2rem;
     background: var(--color-paper-raised);
     border-right: 1px solid var(--color-line-soft);
     transition: width 0.16s ease;
@@ -349,6 +356,24 @@ a {
 
   .nav-rail[data-collapsed="true"] {
     width: 4.5rem;
+  }
+
+  /* Wrapper con ghim thật theo viewport khi cuộn — panel ngoài (.nav-rail)
+     phải trải hết chiều cao trang (align-self: stretch) để nền/viền liền
+     mạch, nhưng chính điều đó triệt tiêu sticky nếu đặt trên panel ngoài
+     (không còn khoảng thừa để trôi khi box đã cao bằng toàn bộ nội dung).
+     Đặt sticky lên wrapper con — chiều cao wrapper chỉ bằng nội dung điều
+     hướng thật (6 mục + toggle), nên có khoảng thừa để ghim khi cuộn.
+     Trước đây còn bị chặn bởi `overflow-x: hidden` trên html/body (đã sửa
+     thành `clip` ở trên) — kiểm chứng thật bằng Playwright: cuộn 1600px,
+     .nav-rail-sticky vẫn ở top đúng bằng --header-height. */
+  .nav-rail-sticky {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: var(--space-md) var(--space-sm);
+    position: sticky;
+    top: var(--header-height);
   }
 }
 

@@ -137,67 +137,74 @@ export function NavRail({ authed }: { authed: boolean }) {
 
   return (
     <nav className="nav-rail" aria-label="Điều hướng chính" data-collapsed={collapsed}>
-      <button
-        type="button"
-        className="nav-rail-toggle"
-        onClick={toggleCollapsed}
-        aria-label={collapsed ? "Mở rộng điều hướng" : "Thu gọn điều hướng"}
-        aria-pressed={collapsed}
-      >
-        <span className="nav-rail-chevron" data-collapsed={collapsed}>
-          <ChevronIcon />
-        </span>
-      </button>
+      {/* Panel ngoài (.nav-rail) trải hết chiều cao trang để nền/viền phải
+          liền mạch với nội dung dài — nếu position:sticky đặt trực tiếp lên
+          nó thì chính chiều cao "trải hết" đó lại triệt tiêu hiệu ứng ghim
+          (không còn khoảng thừa để trôi). Bọc nội dung điều hướng thật trong
+          một wrapper con ghim riêng, độc lập với chiều cao panel ngoài. */}
+      <div className="nav-rail-sticky">
+        <button
+          type="button"
+          className="nav-rail-toggle"
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? "Mở rộng điều hướng" : "Thu gọn điều hướng"}
+          aria-pressed={collapsed}
+        >
+          <span className="nav-rail-chevron" data-collapsed={collapsed}>
+            <ChevronIcon />
+          </span>
+        </button>
 
-      <Link
-        href="/"
-        className="nav-rail-item"
-        aria-current={current(pathname, "/")}
-        title={collapsed ? "Khám phá" : undefined}
-      >
-        <CompassIcon />
-        <span>Khám phá</span>
-      </Link>
+        <Link
+          href="/"
+          className="nav-rail-item"
+          aria-current={current(pathname, "/")}
+          title={collapsed ? "Khám phá" : undefined}
+        >
+          <CompassIcon />
+          <span>Khám phá</span>
+        </Link>
 
-      <Link href="/#tim-kiem" className="nav-rail-item" title={collapsed ? "Tìm kiếm" : undefined}>
-        <SearchIcon />
-        <span>Tìm kiếm</span>
-      </Link>
+        <Link href="/#tim-kiem" className="nav-rail-item" title={collapsed ? "Tìm kiếm" : undefined}>
+          <SearchIcon />
+          <span>Tìm kiếm</span>
+        </Link>
 
-      <Link href="/#chu-de" className="nav-rail-item" title={collapsed ? "Chủ đề" : undefined}>
-        <GridIcon />
-        <span>Chủ đề</span>
-      </Link>
+        <Link href="/#chu-de" className="nav-rail-item" title={collapsed ? "Chủ đề" : undefined}>
+          <GridIcon />
+          <span>Chủ đề</span>
+        </Link>
 
-      <Link
-        href={authed ? "/saved" : "/sign-in?redirectTo=/saved"}
-        className="nav-rail-item"
-        aria-current={current(pathname, "/saved")}
-        title={collapsed ? "Đã lưu" : undefined}
-      >
-        <BookmarkIcon />
-        <span>Đã lưu</span>
-      </Link>
+        <Link
+          href={authed ? "/saved" : "/sign-in?redirectTo=/saved"}
+          className="nav-rail-item"
+          aria-current={current(pathname, "/saved")}
+          title={collapsed ? "Đã lưu" : undefined}
+        >
+          <BookmarkIcon />
+          <span>Đã lưu</span>
+        </Link>
 
-      <Link
-        href={authed ? "/how-to/new" : "/sign-in?redirectTo=/how-to/new"}
-        className="nav-rail-item nav-rail-item-accent"
-        aria-current={current(pathname, "/how-to/new")}
-        title={collapsed ? "Chia sẻ kiến thức" : undefined}
-      >
-        <PlusIcon />
-        <span>Chia sẻ kiến thức</span>
-      </Link>
+        <Link
+          href={authed ? "/how-to/new" : "/sign-in?redirectTo=/how-to/new"}
+          className="nav-rail-item nav-rail-item-accent"
+          aria-current={current(pathname, "/how-to/new")}
+          title={collapsed ? "Chia sẻ kiến thức" : undefined}
+        >
+          <PlusIcon />
+          <span>Chia sẻ kiến thức</span>
+        </Link>
 
-      <Link
-        href={authed ? "/profile" : "/sign-in?redirectTo=/profile"}
-        className="nav-rail-item"
-        aria-current={current(pathname, "/profile")}
-        title={collapsed ? (authed ? "Hồ sơ" : "Đăng nhập") : undefined}
-      >
-        {authed ? <UserIcon /> : <SignInIcon />}
-        <span>{authed ? "Hồ sơ" : "Đăng nhập"}</span>
-      </Link>
+        <Link
+          href={authed ? "/profile" : "/sign-in?redirectTo=/profile"}
+          className="nav-rail-item"
+          aria-current={current(pathname, "/profile")}
+          title={collapsed ? (authed ? "Hồ sơ" : "Đăng nhập") : undefined}
+        >
+          {authed ? <UserIcon /> : <SignInIcon />}
+          <span>{authed ? "Hồ sơ" : "Đăng nhập"}</span>
+        </Link>
+      </div>
     </nav>
   );
 }
