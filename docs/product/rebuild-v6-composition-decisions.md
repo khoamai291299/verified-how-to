@@ -14,15 +14,19 @@ founder cấp (chi tiết implementation/UX/component); không mở lại phạm
   trí phải) + 1 nav rail trái cố định, thu gọn được (icon-only + tooltip khi thu gọn,
   trạng thái lưu qua `localStorage`, mặc định mở rộng).
 
-  > **Làm rõ (bổ sung sau review đóng Phase B, 2026-08-31):** "cố định" ở đây nghĩa là
-  > nav rail là một phần tử cấu trúc THƯỜNG TRỰC của page shell — luôn có mặt trong
-  > layout, không render có điều kiện theo route — KHÔNG phải là nó ghim lại trên màn
-  > hình khi cuộn. Việc ghim thật theo viewport (`position: sticky`) hiện bị vô hiệu
-  > hóa bởi một rule có từ trước phase này, `html, body { overflow-x: hidden }` trong
-  > `app/globals.css`, vốn phá `position: sticky` trên toàn site (kể cả `.site-header`
-  > hiện có, cũng bị ảnh hưởng, không liên quan gì đến Phase B). Sửa hành vi scroll-
-  > container này ở phạm vi toàn site là việc ngoài phạm vi wave fix này — cần một điều
-  > tra riêng, không gộp vào đây.
+  > **Làm rõ (bổ sung sau review đóng Phase B, 2026-08-31):** "cố định" nghĩa là nav
+  > rail là một phần tử cấu trúc THƯỜNG TRỰC của page shell (luôn có mặt trong layout,
+  > không render có điều kiện theo route) **và** thật sự ghim theo viewport khi cuộn.
+  > Bản đầu của Phase B chỉ đạt vế đầu — việc ghim thật (`position: sticky`) bị vô hiệu
+  > hóa bởi một rule có từ trước phase này, `html, body { overflow-x: hidden }`, buộc
+  > `overflow-y` tính thành `auto` theo spec CSS overflow và biến `body` thành scroll
+  > container riêng (ảnh hưởng cả `.site-header` hiện có, không riêng nav rail). Đã sửa
+  > triệt để: đổi `overflow-x` sang `clip` (chặn tràn ngang y hệt `hidden` nhưng không
+  > ép trục kia), và tách nav rail thành 2 lớp — panel ngoài (`.nav-rail`) trải hết
+  > chiều cao trang để nền/viền liền mạch, wrapper con (`.nav-rail-sticky`) chỉ cao bằng
+  > nội dung điều hướng thật và mang `position: sticky`. Đã kiểm chứng bằng Playwright:
+  > cuộn 1600px trên trang chủ, cả header lẫn 6 mục nav rail vẫn hiển thị đúng vị trí,
+  > không tràn ngang ở bất kỳ breakpoint nào (390/768/1024/1280/1440).
 - **Mục nav rail thật, có đích thật** (không mục nào là link chết):
   - **Khám phá** → `/`
   - **Tìm kiếm** → `/#tim-kiem` (cuộn tới + focus ô tìm kiếm bằng JS nhỏ, không phải
