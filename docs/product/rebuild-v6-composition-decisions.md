@@ -13,6 +13,16 @@ founder cấp (chi tiết implementation/UX/component); không mở lại phạm
   header mỏng trên cùng (brandmark + nút "Chia sẻ kiến thức"/Đăng nhập, giữ nguyên vị
   trí phải) + 1 nav rail trái cố định, thu gọn được (icon-only + tooltip khi thu gọn,
   trạng thái lưu qua `localStorage`, mặc định mở rộng).
+
+  > **Làm rõ (bổ sung sau review đóng Phase B, 2026-08-31):** "cố định" ở đây nghĩa là
+  > nav rail là một phần tử cấu trúc THƯỜNG TRỰC của page shell — luôn có mặt trong
+  > layout, không render có điều kiện theo route — KHÔNG phải là nó ghim lại trên màn
+  > hình khi cuộn. Việc ghim thật theo viewport (`position: sticky`) hiện bị vô hiệu
+  > hóa bởi một rule có từ trước phase này, `html, body { overflow-x: hidden }` trong
+  > `app/globals.css`, vốn phá `position: sticky` trên toàn site (kể cả `.site-header`
+  > hiện có, cũng bị ảnh hưởng, không liên quan gì đến Phase B). Sửa hành vi scroll-
+  > container này ở phạm vi toàn site là việc ngoài phạm vi wave fix này — cần một điều
+  > tra riêng, không gộp vào đây.
 - **Mục nav rail thật, có đích thật** (không mục nào là link chết):
   - **Khám phá** → `/`
   - **Tìm kiếm** → `/#tim-kiem` (cuộn tới + focus ô tìm kiếm bằng JS nhỏ, không phải

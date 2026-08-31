@@ -16,20 +16,36 @@ const listeners = new Set<() => void>();
 
 function readCollapsed(): boolean {
   if (collapsedCache === null) {
-    collapsedCache = window.localStorage.getItem(STORAGE_KEY) === "true";
+    // localStorage access THROWS (SecurityError), it doesn't just return null,
+    // on browsers configured to block site data. This component renders in the
+    // root layout with no error boundary above it, so an uncaught throw here
+    // would break every route on the site. Fall back to false (expanded),
+    // matching getServerSnapshotCollapsed's server-render default.
+    try {
+      collapsedCache = window.localStorage.getItem(STORAGE_KEY) === "true";
+    } catch {
+      collapsedCache = false;
+    }
   }
   return collapsedCache;
 }
 
 function writeCollapsed(next: boolean) {
   collapsedCache = next;
-  window.localStorage.setItem(STORAGE_KEY, String(next));
+  try {
+    window.localStorage.setItem(STORAGE_KEY, String(next));
+  } catch {
+    // Persistence unavailable — the in-memory cache above and the listener
+    // notification below still make the toggle work for this page session.
+  }
   listeners.forEach((listener) => listener());
 }
 
 function subscribeCollapsed(listener: () => void) {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 function getServerSnapshotCollapsed() {

@@ -312,6 +312,7 @@ a {
 
 .app-shell {
   display: block;
+  flex: 1;
 }
 
 @media (min-width: 1024px) {
@@ -322,6 +323,8 @@ a {
 }
 
 .app-shell-main {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
 }
