@@ -1993,11 +1993,14 @@ ul {
 
 /* Mẫu vật — ảnh bằng chứng gần nhất; đủ lớn để là một điểm neo thị giác thật,
    hoặc ký hiệu gạch chéo trung tính nếu chưa có lượt thử. */
+/* Kích thước ảnh mẫu vật tăng so với bản trước (108/132px) — kết quả tìm
+   kiếm/danh sách phải "image-forward" hơn thay vì đọc như một dòng bảng dữ
+   liệu (rebuild-v6-current-state-gap.md §D, mission §11). */
 .specimen {
   position: relative;
   flex: 0 0 auto;
-  width: 108px;
-  height: 108px;
+  width: 128px;
+  height: 128px;
   border-radius: var(--radius-md);
   overflow: hidden;
   border: 1px solid var(--color-line);
@@ -2060,8 +2063,8 @@ ul {
 
 @media (min-width: 640px) {
   .specimen {
-    width: 132px;
-    height: 132px;
+    width: 176px;
+    height: 176px;
   }
 }
 
@@ -2530,8 +2533,14 @@ a.profile-stat:focus-visible {
 }
 
 .skeleton-row {
-  height: 108px;
+  height: 128px;
   margin-bottom: var(--space-md);
+}
+
+@media (min-width: 640px) {
+  .skeleton-row {
+    height: 176px;
+  }
 }
 
 .skeleton-image {
