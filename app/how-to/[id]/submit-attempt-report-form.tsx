@@ -24,17 +24,41 @@ function ImageUploadSlot({
   describedBy?: string;
 }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     setPreviewUrl(file ? URL.createObjectURL(file) : null);
   }
 
+  // Input file là uncontrolled — không thể "bỏ chọn" bằng cách đổi state,
+  // phải tự tay xóa value của input thật (mission §15: mỗi ảnh cần có nút
+  // xóa trước khi gửi, không chỉ xem trước).
+  function handleRemove() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (inputRef.current) inputRef.current.value = "";
+    setPreviewUrl(null);
+  }
+
   return (
     <div>
       <label htmlFor={id}>{label}</label>
-      {previewUrl && <img src={previewUrl} alt="" className="attempt-image-preview" />}
+      {previewUrl && (
+        <div className="attempt-image-preview-wrap">
+          <img src={previewUrl} alt="" className="attempt-image-preview" />
+          <button
+            type="button"
+            className="attempt-image-remove"
+            onClick={handleRemove}
+            disabled={disabled}
+            aria-label={`Xóa ${label.toLowerCase()}`}
+          >
+            Xóa
+          </button>
+        </div>
+      )}
       <input
+        ref={inputRef}
         id={id}
         name={name}
         type="file"

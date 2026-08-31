@@ -2507,6 +2507,13 @@ a.profile-stat:focus-visible {
 
 /* Ảnh xem trước ngay khi chọn — ảnh là bằng chứng thật, không nên chỉ là một
    input file trần "Choose File / No file chosen". */
+.attempt-image-preview-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 8rem;
+  margin: 0.35rem 0;
+}
+
 .attempt-image-preview {
   display: block;
   width: 100%;
@@ -2515,7 +2522,23 @@ a.profile-stat:focus-visible {
   object-fit: cover;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-line);
-  margin: 0.35rem 0;
+}
+
+.attempt-image-remove {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(23, 20, 15, 0.65);
+  border: none;
+  border-radius: var(--radius-sm);
+}
+
+.attempt-image-remove:hover:not([disabled]) {
+  background: rgba(23, 20, 15, 0.85);
 }
 
 .site-footer {
