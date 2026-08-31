@@ -2289,6 +2289,19 @@ ul {
   background: var(--color-paper-deep);
 }
 
+/* Tác giả chưa upload ảnh — trước đây hero-image không render gì cả, vi
+   phạm "1. Hero image" trong hệ thống phân cấp How-To (mission §13). Dùng
+   đúng hệ placeholder-art trung thực đã có (.specimen-empty), KHÔNG dùng
+   ảnh Evidence làm hero — sẽ trộn lẫn hai lớp thông tin How-To/Evidence mà
+   design-direction.md §6 yêu cầu tách biệt. */
+.hero-image-empty {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 26rem;
+  border-radius: var(--radius-lg);
+}
+
 .hero-image figcaption {
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.75rem;

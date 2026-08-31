@@ -307,12 +307,16 @@ export default async function HowToDetailPage({ params }: HowToDetailPageProps) 
 
       <div className="howto-layout">
         <div className="howto-main">
-          {heroImageUrl && (
-            <figure className="hero-image">
-              <img src={heroImageUrl} alt={`Minh họa: ${howTo.title}`} />
-              <figcaption>Ảnh minh họa do tác giả cung cấp — không phải ảnh kết quả thật.</figcaption>
-            </figure>
-          )}
+          <figure className="hero-image">
+            {heroImageUrl ? (
+              <>
+                <img src={heroImageUrl} alt={`Minh họa: ${howTo.title}`} />
+                <figcaption>Ảnh minh họa do tác giả cung cấp — không phải ảnh kết quả thật.</figcaption>
+              </>
+            ) : (
+              <span className="specimen-empty hero-image-empty" aria-hidden="true" />
+            )}
+          </figure>
 
           <span className="eyebrow">
             Cách làm
